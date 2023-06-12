@@ -38,11 +38,11 @@ def criarTabela(con):
     "ID" int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "Nome" varchar(255) NOT NULL,
     "Sintomas1" int NOT NULL,
-    "Sintomas2" int NOT NULL default 0,
-    "Sintomas3" int NOT NULL default 0,
-    "Sintomas4" int NOT NULL default 0,
-    "Remédio" varchar(255) NOT NULL,
-    "Tratamento" varchar(255) NOT NULL,
+    "Sintomas2" int,
+    "Sintomas3" int,
+    "Sintomas4" int,
+    "Remédio" varchar(255),
+    "Tratamento" varchar(255),
     CONSTRAINT fk_Sintomas1
         FOREIGN KEY("Sintomas1")
         REFERENCES "Sintomas"("ID"),
@@ -64,13 +64,13 @@ def criarTabela(con):
     "ID_Paciente" int NOT NULL,
     "Sintomas1" int NOT NULL,
     "Intensidade1" int NOT NULL default 1,
-    "Sintomas2" int NOT NULL default 0,
+    "Sintomas2" int,
     "Intensidade2" int NOT NULL default 0,
-    "Sintomas3" int NOT NULL default 0,
+    "Sintomas3" int,
     "Intensidade3" int NOT NULL default 0,
-    "Sintomas4" int NOT NULL default 0,
+    "Sintomas4" int,
     "Intensidade4" int NOT NULL default 0,
-    "Doença" int NOT NULL,
+    "Doença" int,
     CONSTRAINT fk_ID_Paciente
         FOREIGN KEY("ID_Paciente")
         REFERENCES "Pacientes"("ID"),
@@ -126,9 +126,9 @@ def menuLogin():
 
             print('''
             Bem vindo ao Campeonato
-            1. Menu de Times
-            2. Menu das Partidas
-            3. Menu da Tabela
+            1. Menu de Sintomas
+            2. Menu das Doenças
+            3. Menu de Atendimento
             0. Sair
             ''')
 
@@ -138,7 +138,7 @@ def menuLogin():
                 case "1":
                     verMenuSintomas()
                 case "2":
-                    verMenuPartidas()
+                    verMenuDoenças()
                 case "3":
                     verMenuTabela()
                 case "0":
@@ -368,33 +368,27 @@ def removerSintoma():
 
 # #----------------------------------------------------------------------------------------------------------------------#
 
-def verMenuPartidas():
+def verMenuDoenças():
 
     while True:
         print('''
         Opções menu Times:
-        1. Ver Partidas
-        2. Gerar Campeonato
-        3. Criar Partida(Manualmente)
-        4. Atualizar Partida
-        5. Remover Partida
-        6. zerar Partidas
+        1. Ver Doenças
+        2. Criar Doença
+        3. Atualizar Doença
+        4. Remover Doença
         0. Voltar ao menu principal
         ''')
         op = input("Escolha uma das opções:")
         match op:
             case "1":
-                verListaDePartidas()
+                verListaDeDoenças()
             case "2":
-                gerarCampeonato()
+                criarDoença()
             case "3":
-                criarPartida()
+                atualizarDoença()
             case "4":
-                atualizarPartida()
-            case "5":
-                removerPartida()
-            case "6":
-                zerarPartidas()
+                removerDoença()
             case "0":
                 print("Voltando ao menu principal...")
                 break
@@ -403,54 +397,73 @@ def verMenuPartidas():
 
         input("Digite Enter para continuar...")
 
-def verListaDePartidas():
+def verListaDeDoenças():
 
-    listaPartidas = conexaoBanco.consultarBanco('''
-    SELECT * FROM "Partidas"
+    listaDoenças = conexaoBanco.consultarBanco('''
+    SELECT * FROM "Doenças"
     ORDER BY "ID" ASC
     ''')
 
-    if listaPartidas:
-        print("{:^9} | {:^9} | {:^9} ".format("TIME" ,"PLACAR" ,"TIME"))
-        for Partida in listaPartidas:
+    if listaDoenças:
+        print("DOENÇAS   |   SINTOMAS APRESENTADOS")
+        for Doença in listaDoenças:
             
-            Time1daPartida = conexaoBanco.consultarBanco(f'''
-                SELECT * FROM "Times"
-                WHERE "ID" = '{Partida[1]}'
-                ''')[0]
-            
-            Time2daPartida = conexaoBanco.consultarBanco(f'''
-                SELECT * FROM "Times"
-                WHERE "ID" = '{Partida[4]}'
-                ''')[0]
+            if Doença[3] == None:
+                listadeSintomas1 = conexaoBanco.consultarBanco(f'''
+                    SELECT * FROM "Sintomas"
+                    WHERE "ID" = '{Doença[2]}'
+                    ''')[0]
+                print(f"{Doença[1]} | {listadeSintomas1[1]}")
+                
+            if Doença[4] == None:
+                listadeSintomas1 = conexaoBanco.consultarBanco(f'''
+                    SELECT * FROM "Sintomas"
+                    WHERE "ID" = '{Doença[2]}'
+                    ''')[0]
+                listadeSintomas2 = conexaoBanco.consultarBanco(f'''
+                    SELECT * FROM "Sintomas"
+                    WHERE "ID" = '{Doença[3]}'
+                    ''')[0]
+                print(f"{Doença[1]} | {listadeSintomas1[1]} - {listadeSintomas2[1]}")
+                
+            if Doença[5] == None:
+                listadeSintomas1 = conexaoBanco.consultarBanco(f'''
+                    SELECT * FROM "Sintomas"
+                    WHERE "ID" = '{Doença[2]}'
+                    ''')[0]
+                listadeSintomas2 = conexaoBanco.consultarBanco(f'''
+                    SELECT * FROM "Sintomas"
+                    WHERE "ID" = '{Doença[3]}'
+                    ''')[0]
+                listadeSintomas3 = conexaoBanco.consultarBanco(f'''
+                    SELECT * FROM "Sintomas"
+                    WHERE "ID" = '{Doença[4]}'
+                    ''')[0]
 
-            print("{:^9} | {:^3}/{:^3} | {:^9} ".format((Time1daPartida[1]), (Partida[2]), (Partida[3]), (Time2daPartida[1])))
+                print(f"{Doença[1]} | {listadeSintomas1[1]} - {listadeSintomas2[1]} - {listadeSintomas3[1]}")
+                    
+            else:
+                listadeSintomas1 = conexaoBanco.consultarBanco(f'''
+                    SELECT * FROM "Sintomas"
+                    WHERE "ID" = '{Doença[2]}'
+                    ''')[0]
+                listadeSintomas2 = conexaoBanco.consultarBanco(f'''
+                    SELECT * FROM "Sintomas"
+                    WHERE "ID" = '{Doença[3]}'
+                    ''')[0]
+                listadeSintomas3 = conexaoBanco.consultarBanco(f'''
+                    SELECT * FROM "Sintomas"
+                    WHERE "ID" = '{Doença[4]}'
+                    ''')[0]
+                listadeSintomas4 = conexaoBanco.consultarBanco(f'''
+                    SELECT * FROM "Sintomas"
+                    WHERE "ID" = '{Doença[5]}'
+                    ''')[0]
+
+                print(f"{Doença[1]} | {listadeSintomas1[1]} - {listadeSintomas2[1]} - {listadeSintomas3[1]} - {listadeSintomas4[1]}")
 
     else:
         print("Ocorreu um erro na consulta, ou a lista é vazia.")
-
-def gerarCampeonato():
-
-    listaTimes = conexaoBanco.consultarBanco('''
-    SELECT * FROM "Times"
-    ''')
-
-    for Time1 in listaTimes:
-        Time1 = Time1[0]
-        for Time2 in listaTimes:
-            Time2 = Time2[0]
-            if Time1 != Time2:
-                Gols1 = random.randrange(0,5)
-                Gols2 = random.randrange(0,5)
-                sqlInserir = f'''
-                    INSERT INTO "Partidas"
-                    Values(default,{Time1},{Gols1},{Gols2},{Time2})
-                    '''
-                    
-                if conexaoBanco.manipularBanco(sqlInserir):
-                    print("Campeonato gerado com sucesso.")
-                else:
-                    print("Falha ao gerar campeonato!")
 
 def criarPartida():
 
@@ -564,38 +577,6 @@ def removerPartida():
                print("Partida removida com sucesso.")
            else:
                print("Partida não existe ou não foi removido.")
-        case "N":
-            print("Ok voltando ao menu principal")
-        case _:
-            print("Você digitou um comando inválido. Voltando ao menu.")
-
-def zerarPartidas():
-
-    print("Tela de remoção de campeonato:")
-    print("Lista de Partidas")
-    
-    verListaDePartidas()
-
-    listaPartidas = conexaoBanco.consultarBanco('''
-    SELECT * FROM "Partidas"
-    ORDER BY "ID" ASC
-    ''')
-
-    confirmar = input("Deseja remover zerar tabela? (S/N)").upper()
-
-    match confirmar:
-        case "S":
-           
-           for idPartida in  listaPartidas:
-            sqlRemocao = f'''
-            DELETE FROM "Partidas"
-            WHERE "ID" = '{idPartida[0]}'
-            '''
-            
-            if conexaoBanco.manipularBanco(sqlRemocao):
-                print("Campeonato zerada com sucesso.")
-            else:
-                print("Partida não existe ou não foi removido.")
         case "N":
             print("Ok voltando ao menu principal")
         case _:
