@@ -125,7 +125,7 @@ def menuLogin():
         while True:
 
             print('''
-            Bem vindo ao Campeonato
+            Bem vindo ao ClickMed
             1. Menu de Sintomas
             2. Menu das Doenças
             3. Menu de Atendimento
@@ -304,7 +304,7 @@ def atualizarSintoma():
 
 def verSintomaEspecifico(idSintoma):
     Sintoma = conexaoBanco.consultarBanco(f'''SELECT * FROM "Sintomas"
-    WHERE "ID" = {idSintoma}
+    WHERE "ID" = '{idSintoma}'
     ''')
 
     if Sintoma:
@@ -375,8 +375,10 @@ def verMenuDoenças():
         Opções menu Times:
         1. Ver Doenças
         2. Criar Doença
-        3. Atualizar Doença
-        4. Remover Doença
+        3. Ver Tratamento/Remedio da Doença
+        4. Criar/Atualizar Tratamento/Remedio da Doença
+        5. Atualizar Doença
+        6. Remover Doença
         0. Voltar ao menu principal
         ''')
         op = input("Escolha uma das opções:")
@@ -386,8 +388,12 @@ def verMenuDoenças():
             case "2":
                 criarDoença()
             case "3":
-                atualizarDoença()
+                verTratamentodeDoença()
             case "4":
+                criarAtualizarTratamentoparaDoença()
+            case "5":
+                atualizarDoença()
+            case "6":
                 removerDoença()
             case "0":
                 print("Voltando ao menu principal...")
@@ -465,118 +471,401 @@ def verListaDeDoenças():
     else:
         print("Ocorreu um erro na consulta, ou a lista é vazia.")
 
-def criarPartida():
+def criarDoença():
 
-    listaTimes = conexaoBanco.consultarBanco('''
-    SELECT * FROM "Times"
+    nomeD = input("Digite o nome do Sintoma:")
+    if nomeD == "":
+        print("Inserira um nome valido!")
+
+    listaSintomas = conexaoBanco.consultarBanco('''
+    SELECT * FROM "Sintomas"
     ORDER BY "ID" ASC
     ''')
 
-    if listaTimes:
+    if listaSintomas:
+        print("Esses são os sintomas cadastrados no sistema:")
         print("ID | NOME")
-        for Time in listaTimes:
-            print(f"{Time[0]} | {Time[1]}")
-
-    else:
-        print("Ocorreu um erro na consulta, ou a lista é vazia.")
+        for Sintoma in listaSintomas:
+            print(f"{Sintoma[0]} | {Sintoma[1]}")
 
 
-    Time1 = input("Digite o id do time desejado:")
-    if Time1.isdigit():
-        Time2 = input(f"Digite o id do time que iria enfrentar o time {Time1}:")
-        if Time1 != Time2 and Time2.isdigit():
-            Gols1 = input("Digite a quantidade de gols do time escolhido:")
-            if Gols1.isdigit():
-                Gols2 = input("Digite a quantidade de gols do time adversário:")
-                if Gols2.isdigit():
-                    sqlInserir = f'''
-                        INSERT INTO "Partidas"
-                        Values(default, {Time1},{Gols1},{Gols2},{Time2})
-                        '''
+    Sintoma1 = input("Digite o id do Sintoma desejado:")
+    if Sintoma1.isdigit():
+
+        confirmar = input("Deseja adicionar mais um Sintoma? (S/N)").upper()
+
+        match confirmar:
+            case "S":
+                Sintoma2 = input(f"Digite o id do segundo Sintoma:")
+                if Sintoma1 != Sintoma2 and Sintoma2.isdigit():
+
+                    confirmar = input("Deseja adicionar mais um Sintoma? (S/N)").upper()
+
+                    match confirmar:
+                        case "S":
+                            Sintoma3 = input(f"Digite o id do terceiro Sintoma:")
+                            if Sintoma1 != Sintoma3 and Sintoma2 != Sintoma3 and Sintoma3.isdigit():
+                                match confirmar:
+                                    case "S":
+                                        Sintoma4 = input(f"Digite o id do quarto Sintoma:")
+                                        if Sintoma1 != Sintoma4 and Sintoma2 != Sintoma4 and Sintoma3 != Sintoma4 and Sintoma4.isdigit():
+                                            sqlInserir = f'''
+                                            INSERT INTO "Doenças"
+                                            Values(default,'{nomeD}','{Sintoma1}','{Sintoma2}','{Sintoma3}','{Sintoma4}')
+                                            '''
+                                    case "N":
+                                        sqlInserir = f'''
+                                            INSERT INTO "Doenças"
+                                            Values(default,'{nomeD}','{Sintoma1}','{Sintoma2}','{Sintoma3}')
+                                            '''
+                                    case _:
+                                        print("Você digitou um comando inválido. Voltando ao menu.")
+                        case "N":
+                            sqlInserir = f'''
+                                INSERT INTO "Doenças"
+                                Values(default,'{nomeD}','{Sintoma1}','{Sintoma2}')
+                                '''
+                        case _:
+                            print("Você digitou um comando inválido. Voltando ao menu.")
+
+            case "N":
+                sqlInserir = f'''
+                    INSERT INTO "Doenças"
+                    Values(default,'{nomeD}','{Sintoma1}')
+                    '''
+            case _:
+                print("Você digitou um comando inválido. Voltando ao menu.")
                                 
+        if conexaoBanco.manipularBanco(sqlInserir):
+            return "Partida gerada com sucesso."
+        else:
+            return "Falha ao gerar Partida!"
+    else:
+       return "Escolha uma opção válida."
+
+def verTratamentodeDoença():
+
+    print("Lista de doenças:")
+    verListaDeDoenças()
+    doençadesejada = input("Digite o ID da Doença que deseja ver o Tratamento:")
+    if doençadesejada == "" and not doençadesejada.isdigit():
+        print("Inserira um ID valido!")
+    else:
+        doençadesejada1 = conexaoBanco.consultarBanco(f'''
+            SELECT * FROM "Doenças"
+            WHERE "ID" = '{doençadesejada}'
+            ''')[0]
+        
+        if doençadesejada1[6] == None and doençadesejada1[7] == None:
+            print("Doença não possui um tratamento cadastrado.")
+
+        if doençadesejada1[6] == None:
+            print("Doença    |     Tratamento")
+            print(f"{doençadesejada1[1]} | {doençadesejada1[7]}")
+
+        if doençadesejada1[7] == None:
+            print("Doença    |     Tratamento")
+            print(f"{doençadesejada1[1]} | {doençadesejada1[6]}")
+
+        else:
+            print("Doença    |     Tratamento")
+            print(f"{doençadesejada1[1]} | {doençadesejada1[6]}\{doençadesejada1[7]}")
+
+def criarAtualizarTratamentoparaDoença():
+
+    print("Lista de doenças:")
+    verListaDeDoenças()
+    doençadesejada = input("Digite o ID da Doença que deseja ver o Tratamento:")
+    if doençadesejada == "" and not doençadesejada.isdigit():
+        print("Inserira um ID valido!")
+    else:
+        doençadesejada1 = conexaoBanco.consultarBanco(f'''
+            SELECT * FROM "Doenças"
+            WHERE "ID" = '{doençadesejada}'
+            ''')[0]
+        
+        if doençadesejada1[6] == None and doençadesejada1[7] == None:
+            print("Doença não possui um tratamento cadastrado.")
+
+        if doençadesejada1[6] == None:
+            print("Doença    |     Tratamento")
+            print(f"{doençadesejada1[1]} | {doençadesejada1[7]}")
+
+        if doençadesejada1[7] == None:
+            print("Doença    |     Tratamento")
+            print(f"{doençadesejada1[1]} | {doençadesejada1[6]}")
+
+        else:
+            print("Doença    |     Tratamento")
+            print(f"{doençadesejada1[1]} | {doençadesejada1[6]}\{doençadesejada1[7]}")
+
+    confirmar = input("Deseja criar um tratamento para essa doença? (S/N)").upper()
+
+    match confirmar:
+        case "S":
+            remedio = input("Digite o remédio da Doença:(Deixe vazio caso não queria adicionar)")
+            tratamento = input("Digite o tratamento da Doença:(Deixe vazio caso não queria adicionar)")
+
+            if remedio == None and tratamento == None:
+                print("Remédio e tratamento vazio. Voltando ao menu.")
+
+            if remedio == None:
+                sqlInserir = f'''
+                    UPDATE "Doenças"
+                    SET "Tratamento" = '{tratamento}'
+                    WHERE "ID" = {doençadesejada}
+                    '''
                 if conexaoBanco.manipularBanco(sqlInserir):
-                    print("Partida gerada com sucesso.")
+                        print("Tratamento gerado com sucesso.")
                 else:
-                    print("Falha ao gerar Partida!")
-    else:
-        print("Escolha uma opção válida.")
+                    print("Falha ao criar tratamento para doença!")
 
-def atualizarPartida():
-    print("Tela de atualização de Partida:")
-    print("Lista de Partidas")
+            if tratamento == None:
+                sqlInserir = f'''
+                    UPDATE "Doenças"
+                    SET "Remédio" = '{remedio}'
+                    WHERE "ID" = {doençadesejada}
+                    '''
+                if conexaoBanco.manipularBanco(sqlInserir):
+                        print("Tratamento gerado com sucesso.")
+                else:
+                    print("Falha ao criar tratamento para doença!")
+
+            else:
+                sqlInserir = f'''
+                    UPDATE "Doenças"
+                    SET "Remédio" = '{remedio}', "Tratamento" = '{tratamento}'
+                    WHERE "ID" = {doençadesejada}
+                    '''
+                if conexaoBanco.manipularBanco(sqlInserir):
+                        print("Tratamento gerado com sucesso.")
+                else:
+                    print("Falha ao criar tratamento para doença!")
+
+        case "N":
+            print("Ok voltando ao menu principal")
+        case _:
+            print("Você digitou um comando inválido. Voltando ao menu.")
+
+def atualizarDoença():
+
+    print("Tela de atualização de Doença:")
+    print("Lista de Doenças")
     
-    verListaDePartidas()
-    PartidaEscolhido = input("Digite o id do partida escolhida:")
-    if PartidaEscolhido.isdigit():
-        verPartidaEspecifico(PartidaEscolhido)
-        Time1 = input("Digite o id do time desejado:")
-        if Time1.isdigit():
-            Time2 = input(f"Digite o id do time que iria enfrentar o time {Time1}:")
-            if Time1 != Time2 and Time2.isdigit():
-                Gols1 = input("Digite a quantidade de gols do time escolhido:")
-                if Gols1.isdigit():
-                    Gols2 = input("Digite a quantidade de gols do time adversário:")
-                    if Gols2.isdigit():
-                        sqlInserir = f'''
-                           UPDATE "Partidas"
-                            SET "Time1" = {Time1}, "Gols1" = {Gols1}, "Gols2" = {Gols2}, "Time2" = {Time2}
-                            WHERE "ID" = {PartidaEscolhido[0]}
-                            '''
-                                    
-                    if conexaoBanco.manipularBanco(sqlInserir):
-                        print("Partida alterada com sucesso.")
-                    else:
-                        print("Falha ao gerar Partida!")
+    verListaDeDoenças()
+    DoençaEscolhido = input("Digite o id do Doença escolhida:")
+
+    if DoençaEscolhido.isdigit() and not DoençaEscolhido == None:
+        verDoençaEspecifico(DoençaEscolhido)
+
     else:
-        print("Escolha uma opção válida.")
+        return "Escolha uma opção válida."
 
-def verPartidaEspecifico(idPartida):
+    confirmar = input("Deseja realmente atualizar essa doença? (S/N)").upper()
 
-    listaPartidas = conexaoBanco.consultarBanco(f'''
-    SELECT * FROM "Partidas"
-    WHERE "ID" = {idPartida[0]}
+    match confirmar:
+        case "S":
+            nomeD = input("Digite o nome do Sintoma:")
+            if nomeD == "":
+                print("Inserira um nome valido!")
+
+            listaSintomas = conexaoBanco.consultarBanco('''
+            SELECT * FROM "Sintomas"
+            ORDER BY "ID" ASC
+            ''')
+
+            if listaSintomas:
+                print("Esses são os sintomas cadastrados no sistema:")
+                print("ID | NOME")
+                for Sintoma in listaSintomas:
+                    print(f"{Sintoma[0]} | {Sintoma[1]}")
+
+
+            Sintoma1 = input("Digite o id do Sintoma desejado:")
+            if Sintoma1.isdigit():
+
+                confirmar = input("Deseja adicionar mais um Sintoma? (S/N)").upper()
+
+                match confirmar:
+                    case "S":
+                        Sintoma2 = input(f"Digite o id do segundo Sintoma:")
+                        if Sintoma1 != Sintoma2 and Sintoma2.isdigit():
+
+                            confirmar = input("Deseja adicionar mais um Sintoma? (S/N)").upper()
+
+                            match confirmar:
+                                case "S":
+                                    Sintoma3 = input(f"Digite o id do terceiro Sintoma:")
+                                    if Sintoma1 != Sintoma3 and Sintoma2 != Sintoma3 and Sintoma3.isdigit():
+                                        match confirmar:
+                                            case "S":
+                                                Sintoma4 = input(f"Digite o id do quarto Sintoma:")
+                                                if Sintoma1 != Sintoma4 and Sintoma2 != Sintoma4 and Sintoma3 != Sintoma4 and Sintoma4.isdigit():
+                                                    sqlInserir = f'''
+                                                        UPDATE "Doenças"
+                                                        SET "Nome" = '{nomeD}', "Sintomas1" = '{Sintoma1}', "Sintomas2" = '{Sintoma2}', "Sintomas3" = '{Sintoma3}', "Sintomas4" = '{Sintoma4}'
+                                                        WHERE "ID" = '{DoençaEscolhido}'
+                                                        '''
+                                            case "N":
+                                                sqlInserir = f'''
+                                                    UPDATE "Doenças"
+                                                    SET "Nome" = '{nomeD}', "Sintomas1" = '{Sintoma1}', "Sintomas2" = '{Sintoma2}', "Sintomas3" = '{Sintoma3}'
+                                                    WHERE "ID" = '{DoençaEscolhido}'
+                                                    '''
+                                            case _:
+                                                print("Você digitou um comando inválido. Voltando ao menu.")
+                                case "N":
+                                    sqlInserir = f'''
+                                        UPDATE "Doenças"
+                                        SET "Nome" = '{nomeD}', "Sintomas1" = '{Sintoma1}', "Sintomas2" = '{Sintoma2}'
+                                        WHERE "ID" = '{DoençaEscolhido}'
+                                        '''
+                                case _:
+                                    print("Você digitou um comando inválido. Voltando ao menu.")
+
+                    case "N":
+                        sqlInserir = f'''
+                            UPDATE "Doenças"
+                            SET "Nome" = '{nomeD}', "Sintomas1" = '{Sintoma1}'
+                            WHERE "ID" = '{DoençaEscolhido}'
+                            '''
+                    case _:
+                        print("Você digitou um comando inválido. Voltando ao menu.")
+                                            
+                if conexaoBanco.manipularBanco(sqlInserir):
+                    return "Partida gerada com sucesso."
+                else:
+                    return "Falha ao gerar Partida!"
+        case "N":
+            print("Ok voltando ao menu principal")
+        case _:
+            print("Você digitou um comando inválido. Voltando ao menu.")
+
+    if DoençaEscolhido.isdigit() and not DoençaEscolhido == None:
+        verDoençaEspecifico(DoençaEscolhido)
+
+        nomeD = input("Digite o nome do Sintoma:")
+        if nomeD == "":
+            print("Inserira um nome valido!")
+
+            listaSintomas = conexaoBanco.consultarBanco('''
+            SELECT * FROM "Sintomas"
+            ORDER BY "ID" ASC
+            ''')
+
+            if listaSintomas:
+                print("Esses são os sintomas cadastrados no sistema:")
+                print("ID | NOME")
+                for Sintoma in listaSintomas:
+                    print(f"{Sintoma[0]} | {Sintoma[1]}")
+
+
+            Sintoma1 = input("Digite o id do Sintoma desejado:")
+            if Sintoma1.isdigit():
+
+                confirmar = input("Deseja adicionar mais um Sintoma? (S/N)").upper()
+
+                match confirmar:
+                    case "S":
+                        Sintoma2 = input(f"Digite o id do segundo Sintoma:")
+                        if Sintoma1 != Sintoma2 and Sintoma2.isdigit():
+
+                            confirmar = input("Deseja adicionar mais um Sintoma? (S/N)").upper()
+
+                            match confirmar:
+                                case "S":
+                                    Sintoma3 = input(f"Digite o id do terceiro Sintoma:")
+                                    if Sintoma1 != Sintoma3 and Sintoma2 != Sintoma3 and Sintoma3.isdigit():
+                                        match confirmar:
+                                            case "S":
+                                                Sintoma4 = input(f"Digite o id do quarto Sintoma:")
+                                                if Sintoma1 != Sintoma4 and Sintoma2 != Sintoma4 and Sintoma3 != Sintoma4 and Sintoma4.isdigit():
+                                                    sqlInserir = f'''
+                                                        UPDATE "Doenças"
+                                                        SET "Nome" = '{nomeD}', "Sintomas1" = '{Sintoma1}', "Sintomas2" = '{Sintoma2}', "Sintomas3" = '{Sintoma3}', "Sintomas4" = '{Sintoma4}'
+                                                        WHERE "ID" = '{DoençaEscolhido}'
+                                                        '''
+                                            case "N":
+                                                sqlInserir = f'''
+                                                    UPDATE "Doenças"
+                                                    SET "Nome" = '{nomeD}', "Sintomas1" = '{Sintoma1}', "Sintomas2" = '{Sintoma2}', "Sintomas3" = '{Sintoma3}'
+                                                    WHERE "ID" = '{DoençaEscolhido}'
+                                                    '''
+                                            case _:
+                                                print("Você digitou um comando inválido. Voltando ao menu.")
+                                case "N":
+                                    sqlInserir = f'''
+                                        UPDATE "Doenças"
+                                        SET "Nome" = '{nomeD}', "Sintomas1" = '{Sintoma1}', "Sintomas2" = '{Sintoma2}'
+                                        WHERE "ID" = '{DoençaEscolhido}'
+                                        '''
+                                case _:
+                                    print("Você digitou um comando inválido. Voltando ao menu.")
+
+                    case "N":
+                        sqlInserir = f'''
+                            UPDATE "Doenças"
+                            SET "Nome" = '{nomeD}', "Sintomas1" = '{Sintoma1}'
+                            WHERE "ID" = '{DoençaEscolhido}'
+                            '''
+                    case _:
+                        print("Você digitou um comando inválido. Voltando ao menu.")
+                                        
+                if conexaoBanco.manipularBanco(sqlInserir):
+                    return "Partida gerada com sucesso."
+                else:
+                    return "Falha ao gerar Partida!"
+    else:
+        return "Escolha uma opção válida."
+
+def verDoençaEspecifico(idAtendimento):
+
+    listaAtendimentos = conexaoBanco.consultarBanco(f'''
+    SELECT * FROM "Atendimentos"
+    WHERE "Doença" = '{idAtendimento}'
     ''')
 
-    if listaPartidas:
-        print("{:^9} | {:^9} | {:^9} ".format("TIME" ,"PLACAR" ,"TIME"))
-        for Partida in listaPartidas:
+    if listaAtendimentos:
+        print("{:^9} | {:^15} ".format("ID" , "Paciente"))
+        for Atendimento in listaAtendimentos:
             
-            Time1daPartida = conexaoBanco.consultarBanco(f'''
-                SELECT * FROM "Times"
-                WHERE "ID" = '{Partida[1]}'
+            Time1daAtendimento = conexaoBanco.consultarBanco(f'''
+                SELECT * FROM "Pacientes"
+                WHERE "ID" = '{Atendimento[1]}'
                 ''')[0]
             
-            Time2daPartida = conexaoBanco.consultarBanco(f'''
-                SELECT * FROM "Times"
-                WHERE "ID" = '{Partida[4]}'
-                ''')[0]
-            
-            print("{:^9} | {:^3}/{:^3} | {:^9} ".format((Time1daPartida[1]), (Partida[2]), (Partida[3]), (Time2daPartida[1])))
+            print("{:^9} | {:^15} ".format((Atendimento[0]), (Time1daAtendimento[1])))
 
 
     else:
-        print("O Partidas não foi encontradas!")
+        return "O Atendimentos não foram encontradas!"
 
-def removerPartida():
-    print("Tela de remoção de Partida:")
-    print("Lista de Partidas")
+def removerDoença():
+    print("Tela de remoção de Doença:")
+    print("Lista de Doenças")
     
-    verListaDePartidas()
-    partidaEscolhido = input("Digite o id do partida escolhida:")
-    verPartidaEspecifico(partidaEscolhido)
-    confirmar = input("Deseja remover esta partida? (S/N)").upper()
+    verListaDeDoenças()
+    DoençaEscolhido = input("Digite o id do Doença escolhida:")
+
+    if DoençaEscolhido.isdigit() and not DoençaEscolhido == None:
+        verDoençaEspecifico(DoençaEscolhido)
+
+    else:
+        return "Escolha uma opção válida."
+    
+    confirmar = input("Deseja remover esta Doença? (S/N)").upper()
 
     match confirmar:
         case "S":
            resultadoRemocao = conexaoBanco.manipularBanco(f'''
-           DELETE FROM "Partidas"
-           WHERE "ID" = '{partidaEscolhido}'
+           DELETE FROM "Doenças"
+           WHERE "ID" = '{DoençaEscolhido}'
            ''')
            
            if resultadoRemocao:
-               print("Partida removida com sucesso.")
+               print("Doença removida com sucesso.")
            else:
-               print("Partida não existe ou não foi removido.")
+               print("Doença não existe ou não foi removido.")
         case "N":
             print("Ok voltando ao menu principal")
         case _:
@@ -584,24 +873,30 @@ def removerPartida():
 
 # #----------------------------------------------------------------------------------------------------------------------#
 
-def verMenuTabela():
+def verMenuAtendimento():
 
     while True:
         print('''
-        Opções menu Tabela:
-        1. Ver Tabela
-        2. Atualizar Tabela
-        3. Zerar Tabela
+        Opções menu Atendimento:
+        1. Ver Atendimento
+        2. Ver meus Atendimentos
+        3. Quero Atendimento
+        4. Atualizar Atendimento
+        5. remover Atendimento
         0. Voltar ao menu principal
         ''')
         op = input("Escolha uma das opções:")
         match op:
             case "1":
-                verListaDeTabela()
+                verListaDeAtendimento()
             case "2":
-                atualizarTabela()
+                verMeusAtendimento()
             case "3":
-                zerarTabela()
+                queroAtendimento()
+            case "4":
+                atualizarAtendimento()
+            case "5":
+                removerAtendimento()
             case "0":
                 print("Voltando ao menu principal...")
                 break
@@ -610,169 +905,71 @@ def verMenuTabela():
 
         input("Digite Enter para continuar...")
 
-def verListaDeTabela():
+def verListaDeAtendimento():
 
-    i = 0
-
-    listaTabelas = conexaoBanco.consultarBanco('''
-    SELECT * FROM "Tabela"
-    ORDER BY "Pontos" DESC
+    listaAtendimentos = conexaoBanco.consultarBanco('''
+    SELECT * FROM "Atendimento"
+    ORDER BY "ID" DESC
     ''')
 
-    if listaTabelas:
-        print("{:^6} | {:^9} | {:^6} | {:^6} | {:^6} | {:^6} | {:^6} | {:^6} | {:^6}".format("Rank", "Time", "P", "V", "E" , "D" , "GP" , "GC" , "SG"))
-        for Tabela in listaTabelas:
-
-            i = i + 1
+    if listaAtendimentos:
+        print()
+        for Atendimento in listaAtendimentos:
             
-            TimedaTabela = conexaoBanco.consultarBanco(f'''
-                SELECT * FROM "Times"
-                WHERE "ID" = '{Tabela[1]}'
+            ListadaPacientes = conexaoBanco.consultarBanco(f'''
+                SELECT * FROM "Pacientes"
+                WHERE "ID" = '{Atendimento[1]}'
                 ''')[0]
 
-            print("{:^6} | {:^9} | {:^6} | {:^6} | {:^6} | {:^6} | {:^6} | {:^6} | {:^6}".format((i), (TimedaTabela[1]), (Tabela[2]), (Tabela[3]), (Tabela[4]), (Tabela[5]), (Tabela[6]), (Tabela[7]), (Tabela[8])))
+            ListadaDoenças = conexaoBanco.consultarBanco(f'''
+                SELECT * FROM "Doenças"
+                WHERE "ID" = '{Atendimento[10]}'
+                ''')[0]
+
+            ListadaSintomas1 = conexaoBanco.consultarBanco(f'''
+                SELECT * FROM "Sintomas"
+                WHERE "ID" = '{Atendimento[2]}'
+                ''')[0]
             
+            if Atendimento[4] == None:
+                print(f"{Atendimento[0]}, {ListadaPacientes[1]}, {ListadaDoenças[1]}, {ListadaSintomas1[1]}")
+
+            if Atendimento[6] == None:
+                ListadaSintomas2 = conexaoBanco.consultarBanco(f'''
+                    SELECT * FROM "Sintomas"
+                    WHERE "ID" = '{Atendimento[4]}'
+                    ''')[0]
+                print(f"{Atendimento[0]}, {ListadaPacientes[1]}, {ListadaDoenças[1]}, {ListadaSintomas1[1]}, {ListadaSintomas2[1]}")
+
+            if Atendimento[8] == None:
+                ListadaSintomas2 = conexaoBanco.consultarBanco(f'''
+                    SELECT * FROM "Sintomas"
+                    WHERE "ID" = '{Atendimento[4]}'
+                    ''')[0]
+                ListadaSintomas3 = conexaoBanco.consultarBanco(f'''
+                    SELECT * FROM "Sintomas"
+                    WHERE "ID" = '{Atendimento[6]}'
+                    ''')[0]
+                print(f"{Atendimento[0]}, {ListadaPacientes[1]}, {ListadaDoenças[1]}, {ListadaSintomas1[1]},  {ListadaSintomas2[1]},  {ListadaSintomas3[1]}")
+                
+            else:
+                ListadaSintomas2 = conexaoBanco.consultarBanco(f'''
+                    SELECT * FROM "Sintomas"
+                    WHERE "ID" = '{Atendimento[4]}'
+                    ''')[0]
+                ListadaSintomas3 = conexaoBanco.consultarBanco(f'''
+                    SELECT * FROM "Sintomas"
+                    WHERE "ID" = '{Atendimento[6]}'
+                    ''')[0]
+                ListadaSintomas4 = conexaoBanco.consultarBanco(f'''
+                    SELECT * FROM "Sintomas"
+                    WHERE "ID" = '{Atendimento[8]}'
+                    ''')[0]
+                print(f"{Atendimento[0]}, {ListadaPacientes[1]}, {ListadaDoenças[1]}, {ListadaSintomas1[1]},  {ListadaSintomas2[1]},  {ListadaSintomas3[1]},  {ListadaSintomas4[1]}")
+   
     else:
         print("Ocorreu um erro na consulta, ou a lista é vazia.")
 
-def atualizarTabela():
-
-    listaTimes = conexaoBanco.consultarBanco('''
-    SELECT * FROM "Times"
-    ORDER BY "ID" ASC
-    ''')
-
-    for idTime in listaTimes:
-        idTime = idTime[0]
-
-        vitoria = 0
-        empate = 0
-        derrota = 0
-        pontosV = 0
-        pontosE = 0
-        pontosD = 0
-        golsPros = 0
-        golsContras = 0
-        golsProsTotal = 0
-        golsContrasTotal = 0
-        saldodeGolsTotais = 0
-        vitoriaF = 0
-        empateF = 0
-        derrotaF = 0
-        pontosVF = 0
-        pontosEF = 0
-        pontosDF = 0
-        golsProsF = 0
-        golsContrasF = 0
-
-        Time = conexaoBanco.consultarBanco(f'''SELECT * FROM "Times"
-        WHERE "ID" = {idTime}
-        ''')
-
-        if Time:
-            Time = Time[0]
-            print("Time Escolhido: ")
-            print(f'''
-            ID - {Time[0]}
-            Nome - {Time[1]}
-            ''')
-
-            listaPartidas = conexaoBanco.consultarBanco(f'''
-            SELECT * FROM "Partidas"
-            WHERE "Time1" = '{Time[0]}'
-            ''')
-
-            for partida in listaPartidas:
-
-                if partida[2]<partida[3]:
-                    vitoria = vitoria + 1
-                    pontosV = pontosV + 3 
-                if partida[2]==partida[3]:
-                    empate = empate + 1
-                    pontosE = pontosE + 1
-                if partida[2]>partida[3]:
-                    derrota = derrota + 1
-                    pontosD = pontosD + 0
-
-                golsPros = golsPros + partida[2]
-                golsContras = golsContras + partida[3]
-
-            listaPartidasFora = conexaoBanco.consultarBanco(f'''
-            SELECT * FROM "Partidas"
-            WHERE "Time2" = '{Time[0]}'
-            ''')
-
-            for partidaF in listaPartidasFora:
-
-                if partidaF[2]<partidaF[3]:
-                    vitoriaF = vitoriaF + 1
-                    pontosVF = pontosVF + 3
-                if partidaF[2]==partidaF[3]:
-                    empateF = empateF + 1
-                    pontosEF = pontosEF + 1
-                if partidaF[2]>partidaF[3]:
-                    derrotaF = derrotaF + 1
-                    pontosDF = pontosDF + 0
-
-                golsProsF = golsProsF + partidaF[3]
-                golsContrasF = golsContrasF + partidaF[2]
-
-
-                vitoriasTotais = vitoria + vitoriaF
-                empatesTotais = empate + empateF
-                derrotasTotais = derrota + derrotaF
-                pontosTotais = pontosV + pontosE + pontosVF + pontosEF
-
-            golsProsTotal = golsProsTotal +(golsPros + golsProsF)
-            golsContrasTotal = golsContrasTotal + (golsContras + golsContrasF)
-                
-            saldodeGolsTotais = saldodeGolsTotais + (golsProsTotal - golsContrasTotal)
-
-        sqlInserir = f'''
-        INSERT INTO "Tabela"
-        Values(default, {idTime},{pontosTotais},{vitoriasTotais},{empatesTotais},{derrotasTotais},{golsProsTotal},{golsContrasTotal},{saldodeGolsTotais})
-        '''
-    
-        if conexaoBanco.manipularBanco(sqlInserir):
-
-            print(f"A Tabela foi atualizada com sucesso.")
-        else:
-            print("Falha ao atualizar tabela!")
-
-    else:
-        print("O time não foi encontrado!")
-    
-def zerarTabela():
-
-    print("Tela de remoção de tabela:")
-    print("Lista de Tabela")
-    
-    verListaDeTabela()
-
-    listaTabela = conexaoBanco.consultarBanco('''
-    SELECT * FROM "Tabela"
-    ORDER BY "ID" ASC
-    ''')
-
-    confirmar = input("Deseja remover zerar tabela? (S/N)").upper()
-
-    match confirmar:
-        case "S":
-           
-           for idTabela in  listaTabela:
-            sqlRemocao = f'''
-            DELETE FROM "Tabela"
-            WHERE "ID" = '{idTabela[0]}'
-            '''
-            
-            if conexaoBanco.manipularBanco(sqlRemocao):
-                print("Tabela zerada com sucesso.")
-            else:
-                print("Tabela não existe ou não foi removido.")
-        case "N":
-            print("Ok voltando ao menu principal")
-        case _:
-            print("Você digitou um comando inválido. Voltando ao menu.")
 
 # #----------------------------------------------------------------------------------------------------------------------#
 
