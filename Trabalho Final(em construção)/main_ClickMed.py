@@ -350,23 +350,27 @@ def removerSintoma():
     SintomaEscolhido = input("Digite o id do Sintoma escolhido:")
     if SintomaEscolhido.isdigit():
         verSintomaEspecifico(SintomaEscolhido)
-    confirmar = input("Deseja remover este Sintoma? (S/N)").upper()
+        confirmar = input("Deseja remover este Sintoma? (S/N)").upper()
 
-    match confirmar:
-        case "S":
-           resultadoRemocao = conexaoBanco.manipularBanco(f'''
-           DELETE FROM "Sintomas"
-           WHERE "ID" = '{SintomaEscolhido}'
-           ''')
+        match confirmar:
+            case "S":
+             resultadoRemocao = conexaoBanco.manipularBanco(f'''
+             DELETE FROM "Sintomas"
+             WHERE "ID" = '{SintomaEscolhido}'
+             ''')
            
-           if resultadoRemocao:
+             if resultadoRemocao:
                print("Sintoma removido com sucesso.")
-           else:
+             else:
                print("Sintoma não existe ou não foi removido.")
-        case "N":
-            print("Ok voltando ao menu principal")
-        case _:
-            print("Você digitou um comando inválido. Voltando ao menu.")
+               
+            case "N":
+                print("Ok voltando ao menu principal")
+            case _:
+                print("Você digitou um comando inválido. Voltando ao menu.")
+
+    else:
+        return "Escolha uma opção válida."
 
 # #----------------------------------------------------------------------------------------------------------------------#
 
@@ -776,27 +780,28 @@ def removerDoença():
 
     if DoençaEscolhido.isdigit() and not DoençaEscolhido == None:
         verDoençaEspecifico(DoençaEscolhido)
+    
+        confirmar = input("Deseja remover esta Doença? (S/N)").upper()
 
+        match confirmar:
+            case "S":
+                resultadoRemocao = conexaoBanco.manipularBanco(f'''
+                DELETE FROM "Doenças"
+                WHERE "ID" = '{DoençaEscolhido}'
+                ''')
+           
+                if resultadoRemocao:
+                    print("Doença removida com sucesso.")
+                else:
+                    print("Doença não existe ou não foi removido.")
+
+            case "N":
+                print("Ok voltando ao menu principal")
+            case _:
+                print("Você digitou um comando inválido. Voltando ao menu.")
+                
     else:
         return "Escolha uma opção válida."
-    
-    confirmar = input("Deseja remover esta Doença? (S/N)").upper()
-
-    match confirmar:
-        case "S":
-           resultadoRemocao = conexaoBanco.manipularBanco(f'''
-           DELETE FROM "Doenças"
-           WHERE "ID" = '{DoençaEscolhido}'
-           ''')
-           
-           if resultadoRemocao:
-               print("Doença removida com sucesso.")
-           else:
-               print("Doença não existe ou não foi removido.")
-        case "N":
-            print("Ok voltando ao menu principal")
-        case _:
-            print("Você digitou um comando inválido. Voltando ao menu.")
 
 # #----------------------------------------------------------------------------------------------------------------------#
 
@@ -912,10 +917,114 @@ def atualizarAtendimento():
         match confirmar:
             case "S":
 
+                listaSintomas = conexaoBanco.consultarBanco('''
+                SELECT * FROM "Sintomas"
+                ORDER BY "ID" ASC
+                ''')
+
+                if listaSintomas:
+                    print("Esses são os sintomas cadastrados no sistema:")
+                    print("ID | NOME")
+                    for Sintoma in listaSintomas:
+                        print(f"{Sintoma[0]} | {Sintoma[1]}")
+
+                Sintoma1 = input("Digite o id do primeiro Sintoma deseja atualizar:")
+                if Sintoma1.isdigit():
+
+                    confirmar = input("Deseja adicionar ou atualizar um segundo Sintoma? (S/N)").upper()
+
+                    match confirmar:
+                        case "S":
+                            Sintoma2 = input(f"Digite o id do segundo Sintoma:")
+                            if Sintoma1 != Sintoma2 and Sintoma2.isdigit():
+
+                                confirmar = input("Deseja adicionar ou atualizar um terceiro Sintoma? (S/N)").upper()
+
+                                match confirmar:
+                                    case "S":
+                                        Sintoma3 = input(f"Digite o id do terceiro Sintoma:")
+                                        if Sintoma1 != Sintoma3 and Sintoma2 != Sintoma3 and Sintoma3.isdigit():
+
+                                            confirmar = input("Deseja adicionar ou atualizar um quarto Sintoma? (S/N)").upper()
+
+                                            match confirmar:
+                                                case "S":
+                                                    Sintoma4 = input(f"Digite o id do quarto Sintoma:")
+                                                    if Sintoma1 != Sintoma4 and Sintoma2 != Sintoma4 and Sintoma3 != Sintoma4 and Sintoma4.isdigit():
+                                                        sqlInserir = f'''
+                                                            UPDATE "Atendimentos"
+                                                            SET "Sintomas1" = '{Sintoma1}', "Sintomas2" = '{Sintoma2}', "Sintomas3" = '{Sintoma3}', "Sintomas4" = '{Sintoma4}'
+                                                            WHERE "ID" = '{AtendimentoEscolhido}'
+                                                            '''
+                                                case "N":
+                                                    sqlInserir = f'''
+                                                        UPDATE "Atendimentos"
+                                                        SET "Sintomas1" = '{Sintoma1}', "Sintomas2" = '{Sintoma2}', "Sintomas3" = '{Sintoma3}'
+                                                        WHERE "ID" = '{AtendimentoEscolhido}'
+                                                        '''
+                                                case _:
+                                                    print("Você digitou um comando inválido. Voltando ao menu.")
+                                    case "N":
+                                        sqlInserir = f'''
+                                            UPDATE "Atendimentos"
+                                            SET "Sintomas1" = '{Sintoma1}', "Sintomas2" = '{Sintoma2}'
+                                            WHERE "ID" = '{AtendimentoEscolhido}'
+                                            '''
+                                    case _:
+                                        print("Você digitou um comando inválido. Voltando ao menu.")
+
+                        case "N":
+                            sqlInserir = f'''
+                                UPDATE "Atendimentos"
+                                SET "Sintomas1" = '{Sintoma1}'
+                                WHERE "ID" = '{AtendimentoEscolhido}'
+                                '''
+                        case _:
+                            print("Você digitou um comando inválido. Voltando ao menu.")
+                                                
+                    if conexaoBanco.manipularBanco(sqlInserir):
+                        return "Atendimento atualizada com sucesso."
+                    else:
+                        return "Falha ao atualizar Atendimento!"
+            case "N":
+                print("Ok voltando ao menu principal")
+            case _:
+                print("Você digitou um comando inválido. Voltando ao menu.")
+
     else:
         return "Escolha uma opção válida."
 
 def removerAtendimento():
+
+    print("Tela de remoção de Atendimento:")
+    print("Lista de Atendimentos")
+    
+    verListaDeAtendimento()
+    AtendimentoEscolhido = input("Digite o id do Atendimento escolhida:")
+
+    if AtendimentoEscolhido.isdigit() and not AtendimentoEscolhido == None:
+    
+        confirmar = input("Deseja remover esta Atendimento? (S/N)").upper()
+
+        match confirmar:
+            case "S":
+                resultadoRemocao = conexaoBanco.manipularBanco(f'''
+                DELETE FROM "Atendimentos"
+                WHERE "ID" = '{AtendimentoEscolhido}'
+                ''')
+           
+                if resultadoRemocao:
+                    print("Atendimento removida com sucesso.")
+                else:
+                    print("Atendimento não existe ou não foi removido.")
+
+            case "N":
+                print("Ok voltando ao menu principal")
+            case _:
+                print("Você digitou um comando inválido. Voltando ao menu.")
+
+    else:
+        return "Escolha uma opção válida."
 
 def queroAtendimento():
 
