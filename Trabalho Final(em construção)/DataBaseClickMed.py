@@ -1,4 +1,5 @@
 from conexao import Conexao
+import random
 
 def criarTabela(con):
     listaSql=['''
@@ -102,13 +103,13 @@ conexaoBanco = Conexao("ClickMed","localhost","5432","postgres","postgres")
 
 #----------------------------------------------------------------------------------------------------------------------#
 
-def menuLogin():
+def menuLogin(username,password):
     loginl=[]
     global nome
     nome = []
 
-    username = input("Digite o seu Username:")
-    password = input("Digite a sua Password:")
+    # username = input("Digite o seu Username:")
+    # password = input("Digite a sua Password:")
 
     try: 
         loginl = conexaoBanco.consultarBanco(f'''SELECT * FROM "Login"
@@ -120,113 +121,58 @@ def menuLogin():
         ''')
 
         if loginl != []:
-            print(f"Olá {nome[0][1]}, como podemos lhe ajudar.")
+            return f"Olá {nome[0][1]}, como podemos lhe ajudar."
         
-            while True:
-
-                print('''
-                Bem vindo ao ClickMed
-                1. Menu de Sintomas
-                2. Menu das Doenças
-                3. Menu de Atendimento
-                0. Sair
-                ''')
-
-                op = input("Escolha o menu que deseja acessar:")
-
-                match op:
-                    case "1":
-                        verMenuSintomas()
-                    case "2":
-                        verMenuDoenças()
-                    case "3":
-                        verMenuAtendimento()
-                    case "0":
-                        print("Saindo da programa...")
-                        break
-                    case _:
-                        print("Escolha uma opção válida.")
         else:
-            print ("Falha no login")
+            return "Falha no login"
 
     except(Exception) as error:
-      print("Ocorreu um erro no login!", error)  
+      return "Ocorreu um erro no login!", error
 
 #----------------------------------------------------------------------------------------------------------------------# 
 
-def menuCadastroPaciente():
+def menuCadastroPaciente(nome,cfp,nascimento,cep,complemento,Username,Password,Email):
     IDpa = []
 
-    print("Bem vindo ao Cadastro da ClickMec.")
-
-    nome = input("Digite o seu Nome:")
+    # nome = input("Digite o seu Nome:")
     if nome == "":
-        print("Inserira um nome valido!")
-    cfp = input("Digite o seu CFP:")
+        return "Inserira um nome valido!"
+    # cfp = input("Digite o seu CFP:")
     if cfp == "":
-        print("Inserira um cfp valido!")
+        return "Inserira um cfp valido!"
     if cfp.isdigit():
-        nascimento = input("Digite sua data de nascimento:")
-        cep = input("Digite seu Cep:")    
-        complemento = input("Digite o complemento do seu endereço:")
+
+        # nascimento = input("Digite sua data de nascimento:")
+        # cep = input("Digite seu Cep:")    
+        # complemento = input("Digite o complemento do seu endereço:")
 
         if conexaoBanco.manipularBanco(f'''
         INSERT INTO "Pacientes"
         Values(default, '{nome}', '{cfp}', '{nascimento}', '{cep}', '{complemento}')
         '''):
-            print(f"Está info bem {nome}.")
-        
-        else:
-            print("Ocorreu um erro")
 
 
-        Username = input("Digite o seu Username1:")
-        Password = input("Digite a sua Password:")
-        Email = input("Digite o seu Email:")
-        IDpa = conexaoBanco.consultarBanco(f'''SELECT * FROM "Pacientes"
-        WHERE "Nome" = '{nome}' and "CPF" = '{cfp}'
-        ''')
-        ID_Paciente = IDpa[0][0]
-        
-        if conexaoBanco.manipularBanco(f'''
-        INSERT INTO "Login"
-        Values(default, '{Username}', '{Password}', '{Email}', '{ID_Paciente}')
-        '''):
-            print(f"Tudo certo no seu cadastro {nome}.")
-        
+            # Username = input("Digite o seu Username1:")
+            # Password = input("Digite a sua Password:")
+            # Email = input("Digite o seu Email:")
+
+            IDpa = conexaoBanco.consultarBanco(f'''SELECT * FROM "Pacientes"
+            WHERE "Nome" = '{nome}' and "CPF" = '{cfp}'
+            ''')
+            ID_Paciente = IDpa[0][0]
+            
+            if conexaoBanco.manipularBanco(f'''
+            INSERT INTO "Login"
+            Values(default, '{Username}', '{Password}', '{Email}', '{ID_Paciente}')
+            '''):
+                return f"Tudo certo no seu cadastro {nome}."
+            
+            else:
+                return "Ocorreu um erro"
         else:
-            print("Ocorreu um erro")
+            return "Ocorreu um erro"
 
 #----------------------------------------------------------------------------------------------------------------------#
-
-def verMenuSintomas():
-
-    while True:
-        print('''
-        Opções menu Sintomas:
-        1. Ver Sintomas
-        2. Criar Sintoma
-        3. Atualizar Sintoma
-        4. Remover Sintoma
-        0. Voltar ao menu principal
-        ''')
-        op = input("Escolha uma das opções:")
-        match op:
-            case "1":
-                verListaDeSintomas()
-            case "2":
-                cadastrarNovoSintoma()
-            case "3":
-                atualizarSintoma()
-            case "4":
-                removerSintoma()
-            case "0":
-                print("Voltando ao menu principal...")
-                break
-            case _:
-                print("Escolha uma opção válida.")
-
-        input("Digite Enter para continuar...")
 
 def verListaDeSintomas():
 
@@ -235,89 +181,56 @@ def verListaDeSintomas():
     ORDER BY "ID" ASC
     ''')
 
-    if listaSintomas:
-        print("ID | NOME")
-        for Sintoma in listaSintomas:
-            print(f"{Sintoma[0]} | {Sintoma[1]}")
+    return listaSintomas
 
-        confirmar = input("Deseja ver as doenças que apresenta esse Sintoma? (S/N)").upper()
+def cadastrarNovoSintoma(nome):
 
-        match confirmar:
-            case "S":
-                SintomaEscolhido = input("Digite o id do Sintoma escolhido:")
-                verSintomaEspecifico(SintomaEscolhido)
-            case "N":
-                print("Ok voltando ao menu principal")
-            case _:
-                print("Você digitou um comando inválido. Voltando ao menu.")
-
-    else:
-        print("Ocorreu um erro na consulta, ou a lista é vazia.")
-
-def cadastrarNovoSintoma():
-    print("Cadastro de Sintoma - Insira as informações pedidas")
-
-    nome = input("Digite o nome do Sintoma:")
+    # nome = input("Digite o nome do Sintoma:")
     if nome == "":
-        print("Inserira um nome valido!")
+        return "Erro no cadastro de Sintomas"
     
     else:
         sqlInserir = f'''
         INSERT INTO "Sintomas"
         Values(default, '{nome}')
         '''
-        
+
         if conexaoBanco.manipularBanco(sqlInserir):
 
-            print(f"O sintoma {nome} foi inserido com sucesso.")
+            return f"O sintoma {nome} foi inserido com sucesso."
         else:
-            print("Falha ao inserir o Sintomas!")
+            return "Falha ao inserir o Sintomas!"
 
-def atualizarSintoma():
-    print("Tela de atualização de Sintoma:")
-    print("Lista de Sintomas")
+def atualizarSintoma(SintomaEscolhido,novoNome):
     
-    listaSintomas = conexaoBanco.consultarBanco('''
-    SELECT * FROM "Sintomas"
-    ORDER BY "ID" ASC
-    ''')
+    # verListaDeSintomas()
 
-    if listaSintomas:
-        print("ID | NOME")
-        for Sintoma in listaSintomas:
-            print(f"{Sintoma[0]} | {Sintoma[1]}")
-
-    SintomaEscolhido = input("Digite o id do Sintoma escolhido:")
     if SintomaEscolhido.isdigit():
-        verSintomaEspecifico(SintomaEscolhido)
-        novoNome = input("Digite o novo nome (vazio para não alterar):")
+        # verSintomaEspecifico(SintomaEscolhido)
+        # novoNome = input("Digite o novo nome (vazio para não alterar):")
     
-        if novoNome:
+        if novoNome != "":
             conexaoBanco.manipularBanco(f'''
             UPDATE "Sintomas"
             SET "Nome" = '{novoNome}'
             WHERE "ID" = {SintomaEscolhido}
             ''')
 
-            print(f"O nome foi alterado para '{novoNome}'.")
+            return f"O nome foi alterado para '{novoNome}'."
         
         if novoNome == "":
-            print("O nome não foi alterado.")
+            return "O nome não foi alterado."
     else:
-        print ("Escolha uma opção válida.")
+        return "Escolha uma opção válida."
 
 def verSintomaEspecifico(idSintoma):
+    
     Sintoma = conexaoBanco.consultarBanco(f'''SELECT * FROM "Sintomas"
     WHERE "ID" = '{idSintoma}'
     ''')
 
     if Sintoma:
         Sintoma = Sintoma[0]
-        print("Sintoma Escolhido: ")
-        print(f'''
-        ID - {Sintoma[0]}
-        Nome - {Sintoma[1]}
-        ''')
 
         listaDoenças = conexaoBanco.consultarBanco(f'''
         SELECT * FROM "Doenças"
@@ -325,34 +238,24 @@ def verSintomaEspecifico(idSintoma):
         ''')
 
         if listaDoenças:
-            print("{:^7} | {:^20} ".format("ID" ,"Nome"))
-            for Doença in listaDoenças:
-                print("{:^7} | {:^20} ".format((Doença[0]), (Doença[1])))
-
+            return listaDoenças
+        
         else:
-            print("O Sintoma não apresenta em nenhuma doença cadastrada.")
+            return "O Sintoma não apresenta em nenhuma doença cadastrada."
 
     else:
-        print("O Sintoma não foi encontrado!")
+        return "O Sintoma não foi encontrado!"
 
-def removerSintoma():
-    print("Tela de remoção de Sintoma:")
-    print("Lista de Sintomas")
+def removerSintoma(SintomaEscolhido,confirmarr):
     
-    listaSintomas = conexaoBanco.consultarBanco('''
-    SELECT * FROM "Sintomas"
-    ORDER BY "ID" ASC
-    ''')
+    # verListaDeSintomas()
+    # SintomaEscolhido = input("Digite o id do Sintoma escolhido:")
 
-    if listaSintomas:
-        print("ID | NOME")
-        for Sintoma in listaSintomas:
-            print(f"{Sintoma[0]} | {Sintoma[1]}")
-
-    SintomaEscolhido = input("Digite o id do Sintoma escolhido:")
     if SintomaEscolhido.isdigit():
-        verSintomaEspecifico(SintomaEscolhido)
-        confirmar = input("Deseja remover este Sintoma? (S/N)").upper()
+        # verSintomaEspecifico(SintomaEscolhido)
+        # confirmar = input("Deseja remover este Sintoma? (S/N)").upper()
+        confirmar = confirmarr.upper()
+
 
         match confirmar:
             case "S":
@@ -362,56 +265,24 @@ def removerSintoma():
              ''')
            
              if resultadoRemocao:
-               print("Sintoma removido com sucesso.")
+               return "Sintoma removido com sucesso."
              else:
-               print("Sintoma não existe ou não foi removido.")
+               return "Sintoma não existe ou não foi removido."
                
             case "N":
-                print("Ok voltando ao menu principal")
+                return "Ok voltando ao menu principal"
             case _:
-                print("Você digitou um comando inválido. Voltando ao menu.")
+                return "Você digitou um comando inválido. Voltando ao menu."
 
     else:
-        print ("Escolha uma opção válida.")
+        return "Escolha uma opção válida."
 
 # #----------------------------------------------------------------------------------------------------------------------#
 
-def verMenuDoenças():
-
-    while True:
-        print('''
-        Opções menu Doenças:
-        1. Ver Doenças
-        2. Criar Doença
-        3. Ver Tratamento/Remedio da Doença
-        4. Criar/Atualizar Tratamento/Remedio da Doença
-        5. Atualizar Doença
-        6. Remover Doença
-        0. Voltar ao menu principal
-        ''')
-        op = input("Escolha uma das opções:")
-        match op:
-            case "1":
-                verListaDeDoenças()
-            case "2":
-                criarDoença()
-            case "3":
-                verTratamentodeDoença()
-            case "4":
-                criarAtualizarTratamentoparaDoença()
-            case "5":
-                atualizarDoença()
-            case "6":
-                removerDoença()
-            case "0":
-                print("Voltando ao menu principal...")
-                break
-            case _:
-                print("Escolha uma opção válida.")
-
-        input("Digite Enter para continuar...")
-
 def verListaDeDoenças():
+
+    itensdalista = []
+    listafinal = []
 
     listaDoenças = conexaoBanco.consultarBanco('''
     SELECT * FROM "Doenças"
@@ -419,7 +290,6 @@ def verListaDeDoenças():
     ''')
 
     if listaDoenças:
-        print(" ID |  DOENÇAS   |   SINTOMAS APRESENTADOS")
         for Doença in listaDoenças:
             
             if Doença[3] == None and Doença[4] == None and Doença[5] == None:
@@ -427,7 +297,9 @@ def verListaDeDoenças():
                     SELECT * FROM "Sintomas"
                     WHERE "ID" = '{Doença[2]}'
                     ''')[0]
-                print(f"{Doença[0]} | {Doença[1]} | {listadeSintomas1[1]}")
+                itensdalista = (Doença[0],Doença[1],listadeSintomas1[1])
+
+                listafinal.append(itensdalista)
                   
             if Doença[3] != None and Doença[4] == None and Doença[5] == None:
                 listadeSintomas1 = conexaoBanco.consultarBanco(f'''
@@ -438,7 +310,9 @@ def verListaDeDoenças():
                     SELECT * FROM "Sintomas"
                     WHERE "ID" = '{Doença[3]}'
                     ''')[0]
-                print(f"{Doença[0]} | {Doença[1]} | {listadeSintomas1[1]} - {listadeSintomas2[1]}")
+                itensdalista = (Doença[0],Doença[1],listadeSintomas1[1],listadeSintomas2[1])
+
+                listafinal.append(itensdalista)
                 
             if Doença[3] != None and Doença[4] != None and Doença[5] == None:
                 listadeSintomas1 = conexaoBanco.consultarBanco(f'''
@@ -454,7 +328,9 @@ def verListaDeDoenças():
                     WHERE "ID" = '{Doença[4]}'
                     ''')[0]
 
-                print(f"{Doença[0]} | {Doença[1]} | {listadeSintomas1[1]} - {listadeSintomas2[1]} - {listadeSintomas3[1]}")
+                itensdalista = (Doença[0],Doença[1],listadeSintomas1[1],listadeSintomas2[1],listadeSintomas3[1])
+
+                listafinal.append(itensdalista)
                     
             if Doença[3] != None and Doença[4] != None and Doença[5] != None:
                 listadeSintomas1 = conexaoBanco.consultarBanco(f'''
@@ -474,51 +350,48 @@ def verListaDeDoenças():
                     WHERE "ID" = '{Doença[5]}'
                     ''')[0]
 
-                print(f"{Doença[0]} | {Doença[1]} | {listadeSintomas1[1]} - {listadeSintomas2[1]} - {listadeSintomas3[1]} - {listadeSintomas4[1]}")
+                itensdalista = (Doença[0],Doença[1],listadeSintomas1[1],listadeSintomas2[1],listadeSintomas3[1],listadeSintomas4[1])
+
+                listafinal.append(itensdalista)
+
+        return listafinal
 
     else:
-        print("Ocorreu um erro na consulta, ou a lista é vazia.")
+        return "Ocorreu um erro na consulta, ou a lista é vazia."
 
-def criarDoença():
+def criarDoença(nomeD,Sintoma1,confirmar1,Sintoma2,confirmar2,Sintoma3,confirmar3,Sintoma4):
 
-    nomeD = input("Digite o nome da Doença:")
+    # nomeD = input("Digite o nome da Doença:")
     if nomeD == "":
-        print("Inserira um nome valido!")
+        return "Inserira um nome valido!"
 
-    listaSintomas = conexaoBanco.consultarBanco('''
-    SELECT * FROM "Sintomas"
-    ORDER BY "ID" ASC
-    ''')
-
-    if listaSintomas:
-        print("Esses são os sintomas cadastrados no sistema:")
-        print("ID | NOME")
-        for Sintoma in listaSintomas:
-            print(f"{Sintoma[0]} | {Sintoma[1]}")
-
-
-    Sintoma1 = input("Digite o id do Sintoma do primeiro sintoma apresentado")
+    #verListaDeSintomas()
+    # Sintoma1 = input("Digite o id do Sintoma do primeiro sintoma apresentado")
     if Sintoma1.isdigit():
 
-        confirmar = input("Deseja adicionar um segundo Sintoma? (S/N)").upper()
+        #Deseja adicionar um segundo Sintoma? (S/N)
+        confirmar = confirmar1.upper()
+
 
         match confirmar:
             case "S":
-                Sintoma2 = input(f"Digite o id do segundo Sintoma:")
+                # Sintoma2 = input(f"Digite o id do segundo Sintoma:")
                 if Sintoma1 != Sintoma2 and Sintoma2.isdigit():
 
-                    confirmar = input("Deseja adicionar um terceiro Sintoma? (S/N)").upper()
+                    #Deseja adicionar um terceiro Sintoma? (S/N)
+                    confirmar = confirmar2.upper()
 
                     match confirmar:
                         case "S":
-                            Sintoma3 = input(f"Digite o id do terceiro Sintoma:")
+                            # Sintoma3 = input(f"Digite o id do terceiro Sintoma:")
                             if Sintoma1 != Sintoma3 and Sintoma2 != Sintoma3 and Sintoma3.isdigit():
 
-                                confirmar = input("Deseja adicionar um quarto Sintoma? (S/N)").upper()
+                                #Deseja adicionar um quarto Sintoma? (S/N)
+                                confirmar = confirmar3.upper()
 
                                 match confirmar:
                                     case "S":
-                                        Sintoma4 = input(f"Digite o id do quarto Sintoma:")
+                                        # Sintoma4 = input(f"Digite o id do quarto Sintoma:")
                                         if Sintoma1 != Sintoma4 and Sintoma2 != Sintoma4 and Sintoma3 != Sintoma4 and Sintoma4.isdigit():
                                             sqlInserir = f'''
                                             INSERT INTO "Doenças"
@@ -530,14 +403,14 @@ def criarDoença():
                                             Values(default,'{nomeD}','{Sintoma1}','{Sintoma2}','{Sintoma3}')
                                             '''
                                     case _:
-                                        print("Você digitou um comando inválido. Voltando ao menu.")
+                                        return "Você digitou um comando inválido. Voltando ao menu."
                         case "N":
                             sqlInserir = f'''
                                 INSERT INTO "Doenças"
                                 Values(default,'{nomeD}','{Sintoma1}','{Sintoma2}')
                                 '''
                         case _:
-                            print("Você digitou um comando inválido. Voltando ao menu.")
+                            return "Você digitou um comando inválido. Voltando ao menu."
 
             case "N":
                 sqlInserir = f'''
@@ -545,22 +418,21 @@ def criarDoença():
                     Values(default,'{nomeD}','{Sintoma1}')
                     '''
             case _:
-                print("Você digitou um comando inválido. Voltando ao menu.")
+                return "Você digitou um comando inválido. Voltando ao menu."
                                 
         if conexaoBanco.manipularBanco(sqlInserir):
-            print("Doença gerada com sucesso.") 
+            return "Doença gerada com sucesso."
         else:
-            print("Falha ao gerar Doença!") 
+            return "Falha ao gerar Doença!" 
     else:
-       print("Escolha uma opção válida.") 
+       return "Escolha uma opção válida."
 
-def verTratamentodeDoença():
+def verTratamentodeDoença(doençadesejada):
 
-    print("Lista de doenças:")
-    verListaDeDoenças()
-    doençadesejada = input("Digite o ID da Doença que deseja ver o Tratamento:")
+    # verListaDeDoenças()
+    # doençadesejada = input("Digite o ID da Doença que deseja ver o Tratamento:")
     if doençadesejada == "" and not doençadesejada.isdigit():
-        print("Inserira um ID valido!")
+        return "Inserira um ID valido!"
     else:
         doençadesejada1 = conexaoBanco.consultarBanco(f'''
             SELECT * FROM "Doenças"
@@ -568,149 +440,117 @@ def verTratamentodeDoença():
             ''')[0]
         
         if doençadesejada1[6] == None and doençadesejada1[7] == None:
-            print("Doença não possui um tratamento cadastrado.")
+            return "Doença não possui um tratamento cadastrado."
 
         if doençadesejada1[6] == None and doençadesejada1[7] != None:
-            print("Doença    |     Tratamento")
-            print(f"{doençadesejada1[1]} | {doençadesejada1[7]}")
+           
+            return f"{doençadesejada1[1]} | {doençadesejada1[7]}"
 
         if doençadesejada1[6] != None and doençadesejada1[7] == None:
-            print("Doença    |     Tratamento")
-            print(f"{doençadesejada1[1]} | {doençadesejada1[6]}")
+           
+            return f"{doençadesejada1[1]} | {doençadesejada1[6]}"
 
         if doençadesejada1[6] != None and doençadesejada1[7] != None:
-            print("Doença    |     Tratamento")
-            print(f"{doençadesejada1[1]} | {doençadesejada1[6]}\{doençadesejada1[7]}")
+            
+            return f"{doençadesejada1[1]} | {doençadesejada1[6]}\{doençadesejada1[7]}"
 
-def criarAtualizarTratamentoparaDoença():
+def criarAtualizarTratamentoparaDoença(doençadesejada,confirmart,remedio,tratamento):
 
-    print("Lista de doenças:")
-    verListaDeDoenças()
-    doençadesejada = input("Digite o ID da Doença que deseja ver o Tratamento:")
-    if doençadesejada == "" and not doençadesejada.isdigit():
-        print("Inserira um ID valido!")
-    else:
-        doençadesejada1 = conexaoBanco.consultarBanco(f'''
-            SELECT * FROM "Doenças"
-            WHERE "ID" = '{doençadesejada}'
-            ''')[0]
-        
-        if doençadesejada1[6] == None and doençadesejada1[7] == None:
-            print("Doença não possui um tratamento cadastrado.")
-
-        if doençadesejada1[6] == None:
-            print("Doença    |     Tratamento")
-            print(f"{doençadesejada1[1]} | {doençadesejada1[7]}")
-
-        if doençadesejada1[7] == None:
-            print("Doença    |     Tratamento")
-            print(f"{doençadesejada1[1]} | {doençadesejada1[6]}")
-
-        else:
-            print("Doença    |     Tratamento")
-            print(f"{doençadesejada1[1]} | {doençadesejada1[6]}\{doençadesejada1[7]}")
-
-    confirmar = input("Deseja criar um tratamento para essa doença? (S/N)").upper()
+    
+    # verTratamentodeDoença()
+    # confirmar = input("Deseja criar um tratamento para essa doença? (S/N)").upper()
+    confirmar = confirmart.upper()
 
     match confirmar:
         case "S":
-            remedio = input("Digite o remédio da Doença:(Deixe vazio caso não queria adicionar)")
-            tratamento = input("Digite o tratamento da Doença:(Deixe vazio caso não queria adicionar)")
+            # remedio = input("Digite o remédio da Doença:(Deixe vazio caso não queria adicionar)")
+            # tratamento = input("Digite o tratamento da Doença:(Deixe vazio caso não queria adicionar)")
 
             if remedio == None and tratamento == None:
-                print("Remédio e tratamento vazio. Voltando ao menu.")
+                return "Remédio e tratamento vazio. Voltando ao menu."
 
-            if remedio == None:
+            if remedio == None and tratamento != None:
                 sqlInserir = f'''
                     UPDATE "Doenças"
                     SET "Tratamento" = '{tratamento}'
                     WHERE "ID" = {doençadesejada}
                     '''
                 if conexaoBanco.manipularBanco(sqlInserir):
-                        print("Tratamento gerado com sucesso.")
+                    return "Tratamento gerado com sucesso."
                 else:
-                    print("Falha ao criar tratamento para doença!")
+                    return "Falha ao criar tratamento para doença!"
 
-            if tratamento == None:
+            if tratamento == None and remedio != None:
                 sqlInserir = f'''
                     UPDATE "Doenças"
                     SET "Remédio" = '{remedio}'
                     WHERE "ID" = {doençadesejada}
                     '''
                 if conexaoBanco.manipularBanco(sqlInserir):
-                        print("Tratamento gerado com sucesso.")
+                        return "Tratamento gerado com sucesso."
                 else:
-                    print("Falha ao criar tratamento para doença!")
+                    return "Falha ao criar tratamento para doença!"
 
-            else:
+            if tratamento != None and remedio != None:
                 sqlInserir = f'''
                     UPDATE "Doenças"
                     SET "Remédio" = '{remedio}', "Tratamento" = '{tratamento}'
                     WHERE "ID" = {doençadesejada}
                     '''
                 if conexaoBanco.manipularBanco(sqlInserir):
-                        print("Tratamento gerado com sucesso.")
+                        return "Tratamento gerado com sucesso."
                 else:
-                    print("Falha ao criar tratamento para doença!")
+                    return "Falha ao criar tratamento para doença!"
 
         case "N":
-            print("Ok voltando ao menu principal")
+            return "Ok voltando ao menu principal"
         case _:
-            print("Você digitou um comando inválido. Voltando ao menu.")
+            return "Você digitou um comando inválido. Voltando ao menu."
 
-def atualizarDoença():
-
-    print("Tela de atualização de Doença:")
-    print("Lista de Doenças")
+def atualizarDoença(DoençaEscolhido,confirmar1,nomeD,Sintoma1,confirmar2,Sintoma2,confirmar3,Sintoma3,confirmar4,Sintoma4):
     
-    verListaDeDoenças()
-    DoençaEscolhido = input("Digite o id do Doença escolhida:")
+    # verListaDeDoenças()
+    # DoençaEscolhido = input("Digite o id do Doença escolhida:")
 
     if DoençaEscolhido.isdigit() and not DoençaEscolhido == None:
-        verDoençaEspecifico(DoençaEscolhido)
+        # verDoençaEspecifico(DoençaEscolhido)
 
-        confirmar = input("Deseja realmente atualizar essa doença? (S/N)").upper()
+        # confirmar = input("Deseja realmente atualizar essa doença? (S/N)").upper()
+        confirmar = confirmar1.upper()
 
         match confirmar:
             case "S":
-                nomeD = input("Digite o nome do Doença:")
+                # nomeD = input("Digite o nome do Doença:")
                 if nomeD == "":
-                    print("Inserira um nome valido!")
+                    return "Inserira um nome valido!"
 
-                listaSintomas = conexaoBanco.consultarBanco('''
-                SELECT * FROM "Sintomas"
-                ORDER BY "ID" ASC
-                ''')
+                # verListaDeSintomas()
 
-                if listaSintomas:
-                    print("Esses são os sintomas cadastrados no sistema:")
-                    print("ID | NOME")
-                    for Sintoma in listaSintomas:
-                        print(f"{Sintoma[0]} | {Sintoma[1]}")
-
-
-                Sintoma1 = input("Digite o id do Sintoma do primeiro sintoma apresentado:")
+                # Sintoma1 = input("Digite o id do Sintoma do primeiro sintoma apresentado:")
                 if Sintoma1.isdigit():
 
-                    confirmar = input("Deseja adicionar um segundo Sintoma? (S/N)").upper()
+                    # confirmar = input("Deseja adicionar um segundo Sintoma? (S/N)").upper()
+                    confirmar = confirmar2.upper()
 
                     match confirmar:
                         case "S":
-                            Sintoma2 = input(f"Digite o id do segundo Sintoma:")
+                            # Sintoma2 = input(f"Digite o id do segundo Sintoma:")
                             if Sintoma1 != Sintoma2 and Sintoma2.isdigit():
 
-                                confirmar = input("Deseja adicionar um terceiro Sintoma? (S/N)").upper()
+                                # confirmar = input("Deseja adicionar um terceiro Sintoma? (S/N)").upper()
+                                confirmar = confirmar3.upper()
 
                                 match confirmar:
                                     case "S":
-                                        Sintoma3 = input(f"Digite o id do terceiro Sintoma:")
+                                        # Sintoma3 = input(f"Digite o id do terceiro Sintoma:")
                                         if Sintoma1 != Sintoma3 and Sintoma2 != Sintoma3 and Sintoma3.isdigit():
 
-                                            confirmar = input("Deseja adicionar um quarto Sintoma? (S/N)").upper()
+                                            # confirmar = input("Deseja adicionar um quarto Sintoma? (S/N)").upper()
+                                            confirmar = confirmar4.upper()
 
                                             match confirmar:
                                                 case "S":
-                                                    Sintoma4 = input(f"Digite o id do quarto Sintoma:")
+                                                    # Sintoma4 = input(f"Digite o id do quarto Sintoma:")
                                                     if Sintoma1 != Sintoma4 and Sintoma2 != Sintoma4 and Sintoma3 != Sintoma4 and Sintoma4.isdigit():
                                                         sqlInserir = f'''
                                                             UPDATE "Doenças"
@@ -724,7 +564,7 @@ def atualizarDoença():
                                                         WHERE "ID" = '{DoençaEscolhido}'
                                                         '''
                                                 case _:
-                                                    print("Você digitou um comando inválido. Voltando ao menu.")
+                                                    return "Você digitou um comando inválido. Voltando ao menu."
                                     case "N":
                                         sqlInserir = f'''
                                             UPDATE "Doenças"
@@ -732,7 +572,7 @@ def atualizarDoença():
                                             WHERE "ID" = '{DoençaEscolhido}'
                                             '''
                                     case _:
-                                        print("Você digitou um comando inválido. Voltando ao menu.")
+                                        return "Você digitou um comando inválido. Voltando ao menu."
 
                         case "N":
                             sqlInserir = f'''
@@ -741,20 +581,23 @@ def atualizarDoença():
                                 WHERE "ID" = '{DoençaEscolhido}'
                                 '''
                         case _:
-                            print("Você digitou um comando inválido. Voltando ao menu.")
+                            return "Você digitou um comando inválido. Voltando ao menu."
                                                 
                     if conexaoBanco.manipularBanco(sqlInserir):
-                        print("Doença atualizada com sucesso.") 
+                        return "Doença atualizada com sucesso."
                     else:
-                        print("Falha ao atualizar Doença!") 
+                        return "Falha ao atualizar Doença!"
             case "N":
-                print("Ok voltando ao menu principal")
+                return "Ok voltando ao menu principal"
             case _:
-                print("Você digitou um comando inválido. Voltando ao menu.")
+                return "Você digitou um comando inválido. Voltando ao menu."
     else:
-        print("Escolha uma opção válida.") 
+        return "Escolha uma opção válida."
 
 def verDoençaEspecifico(idAtendimento):
+
+    itensdalista = []
+    listafinal = []
 
     try:
         listaAtendimentos = conexaoBanco.consultarBanco(f'''
@@ -763,7 +606,6 @@ def verDoençaEspecifico(idAtendimento):
         ''')
 
         if listaAtendimentos :
-            print("{:^9} | {:^15} ".format("ID" , "Paciente"))
             for Atendimento in listaAtendimentos:
                 
                 ListadePaciente = conexaoBanco.consultarBanco(f'''
@@ -771,22 +613,25 @@ def verDoençaEspecifico(idAtendimento):
                     WHERE "ID" = '{Atendimento[1]}'
                     ''')[0]
                 
-                print("{:^9} | {:^15} ".format((Atendimento[0]), (ListadePaciente[1])))
+                itensdalista = (Atendimento[0], ListadePaciente[1])
+
+                listafinal.append(itensdalista)
+
+        return listafinal
 
     except:
-        print("O Atendimentos não foram encontradas!") 
+        return "O Atendimentos não foram encontradas!"
 
-def removerDoença():
-    print("Tela de remoção de Doença:")
-    print("Lista de Doenças")
+def removerDoença(DoençaEscolhido,confirmarr):
     
-    verListaDeDoenças()
-    DoençaEscolhido = input("Digite o id do Doença escolhida:")
+    # verListaDeDoenças()
+    # DoençaEscolhido = input("Digite o id do Doença escolhida:")
 
     if DoençaEscolhido.isdigit() and not DoençaEscolhido == None:
         verDoençaEspecifico(DoençaEscolhido)
     
-        confirmar = input("Deseja remover esta Doença? (S/N)").upper()
+        # confirmar = input("Deseja remover esta Doença? (S/N)").upper()
+        confirmar = confirmarr.upper()
 
         match confirmar:
             case "S":
@@ -796,53 +641,24 @@ def removerDoença():
                 ''')
            
                 if resultadoRemocao:
-                    print("Doença removida com sucesso.")
+                    return "Doença removida com sucesso."
                 else:
-                    print("Doença não existe ou não foi removido.")
+                    return "Doença não existe ou não foi removido."
 
             case "N":
-                print("Ok voltando ao menu principal")
+                return "Ok voltando ao menu principal"
             case _:
-                print("Você digitou um comando inválido. Voltando ao menu.")
+                return "Você digitou um comando inválido. Voltando ao menu."
                 
     else:
-        print ("Escolha uma opção válida.")
+        return "Escolha uma opção válida."
 
 # #----------------------------------------------------------------------------------------------------------------------#
 
-def verMenuAtendimento():
-
-    while True:
-        print('''
-        Opções menu Atendimento:
-        1. Ver Atendimento
-        2. Atualizar Atendimento
-        3. remover Atendimento
-        4. Quero Atendimento
-        5. Ver meus Atendimentos
-        0. Voltar ao menu principal
-        ''')
-        op = input("Escolha uma das opções:")
-        match op:
-            case "1":
-                verListaDeAtendimento()
-            case "2":
-                atualizarAtendimento()
-            case "3":
-                removerAtendimento()
-            case "4":
-                queroAtendimento()
-            case "5":
-                verMeusAtendimento()
-            case "0":
-                print("Voltando ao menu principal...")
-                break
-            case _:
-                print("Escolha uma opção válida.")
-
-        input("Digite Enter para continuar...")
-
 def verListaDeAtendimento():
+
+    itensdalista = []
+    listafinal = []
 
     listaAtendimentos = conexaoBanco.consultarBanco('''
     SELECT * FROM "Atendimento"
@@ -850,7 +666,6 @@ def verListaDeAtendimento():
     ''')
 
     if listaAtendimentos:
-        print("ID  |   Paciente  |    Sintomas    |    Doença")
         for Atendimento in listaAtendimentos:
             
             ListadaPacientes = conexaoBanco.consultarBanco(f'''
@@ -869,14 +684,18 @@ def verListaDeAtendimento():
                 ''')[0]
             
             if Atendimento[4] == None and Atendimento[6] == None and Atendimento[8] == None:
-                print(f"{Atendimento[0]}, {ListadaPacientes[1]}, {ListadaSintomas1[1]}, {ListadaDoenças[1]}")
+                itensdalista = (Atendimento[0], ListadaPacientes[1], ListadaSintomas1[1], ListadaDoenças[1])
+
+                listafinal.append(itensdalista)
 
             if Atendimento[4] != None and Atendimento[6] == None and Atendimento[8] == None:
                 ListadaSintomas2 = conexaoBanco.consultarBanco(f'''
                     SELECT * FROM "Sintomas"
                     WHERE "ID" = '{Atendimento[4]}'
                     ''')[0]
-                print(f"{Atendimento[0]}, {ListadaPacientes[1]}, {ListadaSintomas1[1]}, {ListadaSintomas2[1]}, {ListadaDoenças[1]}")
+                itensdalista = (Atendimento[0], ListadaPacientes[1], ListadaSintomas1[1], ListadaSintomas2[1], ListadaDoenças[1])
+
+                listafinal.append(itensdalista)
 
             if Atendimento[4] != None and Atendimento[6] != None and Atendimento[8] == None:
                 ListadaSintomas2 = conexaoBanco.consultarBanco(f'''
@@ -887,7 +706,9 @@ def verListaDeAtendimento():
                     SELECT * FROM "Sintomas"
                     WHERE "ID" = '{Atendimento[6]}'
                     ''')[0]
-                print(f"{Atendimento[0]}, {ListadaPacientes[1]}, {ListadaSintomas1[1]},  {ListadaSintomas2[1]},  {ListadaSintomas3[1]}, {ListadaDoenças[1]}")
+                itensdalista = (Atendimento[0], ListadaPacientes[1], ListadaSintomas1[1],  ListadaSintomas2[1],  ListadaSintomas3[1], ListadaDoenças[1])
+
+                listafinal.append(itensdalista)
                 
             if Atendimento[4] != None and Atendimento[6] != None and Atendimento[8] != None:
                 ListadaSintomas2 = conexaoBanco.consultarBanco(f'''
@@ -902,64 +723,60 @@ def verListaDeAtendimento():
                     SELECT * FROM "Sintomas"
                     WHERE "ID" = '{Atendimento[8]}'
                     ''')[0]
-                print(f"{Atendimento[0]}, {ListadaPacientes[1]}, {ListadaSintomas1[1]},  {ListadaSintomas2[1]},  {ListadaSintomas3[1]},  {ListadaSintomas4[1]}, {ListadaDoenças[1]}")
-   
-    else:
-        print("Ocorreu um erro na consulta, ou a lista é vazia.")
+                itensdalista = (Atendimento[0], ListadaPacientes[1], ListadaSintomas1[1],  ListadaSintomas2[1],  ListadaSintomas3[1],  ListadaSintomas4[1], ListadaDoenças[1])
 
-def atualizarAtendimento():
+                listafinal.append(itensdalista)
+    
+        return listafinal
+
+    else:
+        return "Ocorreu um erro na consulta, ou a lista é vazia."
+
+def atualizarAtendimento(AtendimentoEscolhido,confirmara,Sintoma1,confirmar1,Sintoma2,confirmar2,Sintoma3,confirmar3,Sintoma4):
 
     listadeSintomas = []
 
-    print("Tela de atualizar de Atendimento:")
-    print("Lista de Atendimentos")
-
-    verListaDeAtendimento()
-    AtendimentoEscolhido = input("Digite o id do Atendimento escolhida:")
+    # verListaDeAtendimento()
+    # AtendimentoEscolhido = input("Digite o id do Atendimento escolhida:")
 
     if AtendimentoEscolhido.isdigit() and not AtendimentoEscolhido == None:
 
-        confirmar = input("Deseja realmente atualizar essa doença? (S/N)").upper()
+        # confirmar = input("Deseja realmente atualizar essa doença? (S/N)").upper()
+        confirmar = confirmara.upper()
 
         match confirmar:
             case "S":
 
-                listaSintomas = conexaoBanco.consultarBanco('''
-                SELECT * FROM "Sintomas"
-                ORDER BY "ID" ASC
-                ''')
+                # verListaDeSintomas()
 
-                if listaSintomas:
-                    print("Esses são os sintomas cadastrados no sistema:")
-                    print("ID | NOME")
-                    for Sintoma in listaSintomas:
-                        print(f"{Sintoma[0]} | {Sintoma[1]}")
-
-                Sintoma1 = input("Digite o id do primeiro Sintoma deseja atualizar:")
+                # Sintoma1 = input("Digite o id do primeiro Sintoma deseja atualizar:")
                 if Sintoma1.isdigit():
                     listadeSintomas.append(Sintoma1)
 
-                    confirmar = input("Deseja adicionar ou atualizar um segundo Sintoma? (S/N)").upper()
+                    # confirmar = input("Deseja adicionar ou atualizar um segundo Sintoma? (S/N)").upper()
+                    confirmar = confirmar1.upper()
 
                     match confirmar:
                         case "S":
-                            Sintoma2 = input(f"Digite o id do segundo Sintoma:")
+                            # Sintoma2 = input(f"Digite o id do segundo Sintoma:")
                             if Sintoma1 != Sintoma2 and Sintoma2.isdigit():
                                 listadeSintomas.append(Sintoma2)
 
-                                confirmar = input("Deseja adicionar ou atualizar um terceiro Sintoma? (S/N)").upper()
+                                # confirmar = input("Deseja adicionar ou atualizar um terceiro Sintoma? (S/N)").upper()
+                                confirmar = confirmar2.upper()
 
                                 match confirmar:
                                     case "S":
-                                        Sintoma3 = input(f"Digite o id do terceiro Sintoma:")
+                                        # Sintoma3 = input(f"Digite o id do terceiro Sintoma:")
                                         if Sintoma1 != Sintoma3 and Sintoma2 != Sintoma3 and Sintoma3.isdigit():
                                             listadeSintomas.append(Sintoma3)
 
-                                            confirmar = input("Deseja adicionar ou atualizar um quarto Sintoma? (S/N)").upper()
+                                            # confirmar = input("Deseja adicionar ou atualizar um quarto Sintoma? (S/N)").upper()
+                                            confirmar = confirmar3.upper()
 
                                             match confirmar:
                                                 case "S":
-                                                    Sintoma4 = input(f"Digite o id do quarto Sintoma:")
+                                                    # Sintoma4 = input(f"Digite o id do quarto Sintoma:")
                                                     if Sintoma1 != Sintoma4 and Sintoma2 != Sintoma4 and Sintoma3 != Sintoma4 and Sintoma4.isdigit():
                                                         listadeSintomas.append(Sintoma4)
                                                         sqlInserir = f'''
@@ -974,7 +791,7 @@ def atualizarAtendimento():
                                                         WHERE "ID" = '{AtendimentoEscolhido}'
                                                         '''
                                                 case _:
-                                                    print("Você digitou um comando inválido. Voltando ao menu.")
+                                                    return "Você digitou um comando inválido. Voltando ao menu."
                                     case "N":
                                         sqlInserir = f'''
                                             UPDATE "Atendimento"
@@ -982,7 +799,7 @@ def atualizarAtendimento():
                                             WHERE "ID" = '{AtendimentoEscolhido}'
                                             '''
                                     case _:
-                                        print("Você digitou um comando inválido. Voltando ao menu.")
+                                        return "Você digitou um comando inválido. Voltando ao menu."
 
                         case "N":
                             sqlInserir = f'''
@@ -991,7 +808,7 @@ def atualizarAtendimento():
                                 WHERE "ID" = '{AtendimentoEscolhido}'
                                 '''
                         case _:
-                            print("Você digitou um comando inválido. Voltando ao menu.")
+                            return "Você digitou um comando inválido. Voltando ao menu."
                                                 
                     if conexaoBanco.manipularBanco(sqlInserir):
 
@@ -1008,28 +825,26 @@ def atualizarAtendimento():
                         WHERE "ID" = '{a[0][0]}'
                         ''')
 
-                        print("Atendimento atualizada com sucesso.")
+                        return "Atendimento atualizada com sucesso."
                     else:
-                        print("Falha ao atualizar Atendimento!") 
+                        return "Falha ao atualizar Atendimento!" 
             case "N":
-                print("Ok voltando ao menu principal")
+                return "Ok voltando ao menu principal"
             case _:
-                print("Você digitou um comando inválido. Voltando ao menu.")
+                return "Você digitou um comando inválido. Voltando ao menu."
 
     else:
-        print("Escolha uma opção válida.") 
+        return "Escolha uma opção válida." 
 
-def removerAtendimento():
-
-    print("Tela de remoção de Atendimento:")
-    print("Lista de Atendimentos")
+def removerAtendimento(AtendimentoEscolhido,confirmara):
     
-    verListaDeAtendimento()
-    AtendimentoEscolhido = input("Digite o id do Atendimento escolhida:")
+    # verListaDeAtendimento()
+    # AtendimentoEscolhido = input("Digite o id do Atendimento escolhida:")
 
     if AtendimentoEscolhido.isdigit() and not AtendimentoEscolhido == None:
     
-        confirmar = input("Deseja remover esta Atendimento? (S/N)").upper()
+        # confirmar = input("Deseja remover esta Atendimento? (S/N)").upper()
+        confirmar = confirmara.upper()
 
         match confirmar:
             case "S":
@@ -1039,25 +854,24 @@ def removerAtendimento():
                 ''')
            
                 if resultadoRemocao:
-                    print("Atendimento removida com sucesso.")
+                    return "Atendimento removida com sucesso."
                 else:
-                    print("Atendimento não existe ou não foi removido.")
+                    return "Atendimento não existe ou não foi removido."
 
             case "N":
-                print("Ok voltando ao menu principal")
+                return "Ok voltando ao menu principal"
             case _:
-                print("Você digitou um comando inválido. Voltando ao menu.")
+                return "Você digitou um comando inválido. Voltando ao menu."
 
     else:
-        print("Escolha uma opção válida.") 
+        return "Escolha uma opção válida."
 
-def queroAtendimento():
+def queroAtendimento(idpaciente,Sintoma1,confirmar1,Sintoma2,confirmar2,Sintoma3,confirmar3,Sintoma4):
 
-    idpaciente = nome[0][0]
+    # isso recebia do login, ja q n vai funcionar o login, tem q pedir o Id do paciente
+    # idpaciente = nome[0][0]
 
     listadeSintomas = []
-
-    print("Bem vindo ao Atendimento ClickMed:")
 
     listaSintomas = conexaoBanco.consultarBanco('''
     SELECT * FROM "Sintomas"
@@ -1065,40 +879,40 @@ def queroAtendimento():
     ''')
 
     if listaSintomas:
-        print("Você apresenta algum desses sintomas?:")
-        print("ID | Sintomas")
-        for Sintoma in listaSintomas:
-            print(f"{Sintoma[0]} | {Sintoma[1]}")
-
-        Sintoma1 = input("Digite o id do primeiro Sintoma apresentado:")
+        
+        # verListaDeSintomas()
+        # Sintoma1 = input("Digite o id do primeiro Sintoma apresentado:")
 
         if Sintoma1.isdigit() and not Sintoma1 == None:
 
-            confirmar = input("Você apresenta um segundo sintoma? (S/N)").upper()
+            # confirmar = input("Você apresenta um segundo sintoma? (S/N)").upper()
+            confirmar = confirmar1.upper()
 
             listadeSintomas.append(Sintoma1)
 
             match confirmar:
                 case "S":
-                    Sintoma2 = input(f"Digite o id do segundo Sintoma:")
+                    # Sintoma2 = input(f"Digite o id do segundo Sintoma:")
                     if Sintoma1 != Sintoma2 and Sintoma2.isdigit():
 
                         listadeSintomas.append(Sintoma2)
 
-                        confirmar = input("Você apresenta um terceiro sintoma? (S/N)").upper()
+                        # confirmar = input("Você apresenta um terceiro sintoma? (S/N)").upper()
+                        confirmar = confirmar2.upper()
 
                         match confirmar:
                             case "S":
-                                Sintoma3 = input(f"Digite o id do terceiro Sintoma:")
+                                # Sintoma3 = input(f"Digite o id do terceiro Sintoma:")
                                 if Sintoma1 != Sintoma3 and Sintoma2 != Sintoma3 and Sintoma3.isdigit():
 
                                     listadeSintomas.append(Sintoma3)
 
-                                    confirmar = input("DVocê apresenta um quarto sintoma? (S/N)").upper()
+                                    # confirmar = input("DVocê apresenta um quarto sintoma? (S/N)").upper()
+                                    confirmar = confirmar3.upper()
 
                                     match confirmar:
                                         case "S":
-                                            Sintoma4 = input(f"Digite o id do quarto Sintoma:")
+                                            # Sintoma4 = input(f"Digite o id do quarto Sintoma:")
                                             if Sintoma1 != Sintoma4 and Sintoma2 != Sintoma4 and Sintoma3 != Sintoma4 and Sintoma4.isdigit():
 
                                                 listadeSintomas.append(Sintoma4)
@@ -1113,14 +927,14 @@ def queroAtendimento():
                                                 Values(default,'{idpaciente}','{Sintoma1}', default,'{Sintoma2}', default,'{Sintoma3}', default)
                                                 ''')
                                         case _:
-                                            print("Você digitou um comando inválido. Voltando ao menu.")
+                                            return "Você digitou um comando inválido. Voltando ao menu."
                             case "N":
                                 sqlInserir = (f'''
                                     INSERT INTO "Atendimento"
                                     Values(default,'{idpaciente}','{Sintoma1}', default,'{Sintoma2}', default)
                                     ''')
                             case _:
-                                print("Você digitou um comando inválido. Voltando ao menu.")
+                                return "Você digitou um comando inválido. Voltando ao menu."
 
                 case "N":
                     sqlInserir = (f'''
@@ -1128,7 +942,7 @@ def queroAtendimento():
                         Values(default,'{idpaciente}','{Sintoma1}', default)
                         ''')
                 case _:
-                    print("Você digitou um comando inválido. Voltando ao menu.")
+                    return "Você digitou um comando inválido. Voltando ao menu."
                                     
             if conexaoBanco.manipularBanco(sqlInserir):
 
@@ -1144,14 +958,19 @@ def queroAtendimento():
                     SET "Doença" = '{s}'
                     WHERE "ID" = '{a[0][0]}'
                     ''')
-                    print("Atendimento gerada com sucesso.") 
+                    return "Atendimento gerada com sucesso."
             else:
-                print("Falha ao gerar Atendimento!") 
+                return "Falha ao gerar Atendimento!"
         else:
-            print("Escolha uma opção válida.") 
+            return "Escolha uma opção válida."
     
-def verMeusAtendimento():
-    idpaciente = nome[0][0]
+def verMeusAtendimento(idpaciente):
+    
+    # isso recebia do login, ja q n vai funcionar o login, tem q pedir o Id do paciente
+    # idpaciente = nome[0][0]
+
+    itensdalista = []
+    listafinal = []
 
     listaAtendimentos = conexaoBanco.consultarBanco(f'''
     SELECT * FROM "Atendimento"
@@ -1159,7 +978,6 @@ def verMeusAtendimento():
     ''')
 
     if listaAtendimentos:
-        print("ID  |   Paciente  |    Sintomas    |    Doença")
         for Atendimento in listaAtendimentos:
             
             ListadaPacientes = conexaoBanco.consultarBanco(f'''
@@ -1177,17 +995,21 @@ def verMeusAtendimento():
                 WHERE "ID" = '{Atendimento[2]}'
                 ''')[0]
             
-            if Atendimento[4] == None:
-                print(f"{Atendimento[0]}, {ListadaPacientes[1]}, {ListadaSintomas1[1]}, {ListadaDoenças[1]}")
+            if Atendimento[4] == None and Atendimento[6] == None and Atendimento[8] == None:
+                itensdalista = (Atendimento[0], ListadaPacientes[1], ListadaSintomas1[1], ListadaDoenças[1])
 
-            if Atendimento[6] == None:
+                listafinal.append(itensdalista)
+
+            if Atendimento[4] != None and Atendimento[6] == None and Atendimento[8] == None:
                 ListadaSintomas2 = conexaoBanco.consultarBanco(f'''
                     SELECT * FROM "Sintomas"
                     WHERE "ID" = '{Atendimento[4]}'
                     ''')[0]
-                print(f"{Atendimento[0]}, {ListadaPacientes[1]}, {ListadaSintomas1[1]}, {ListadaSintomas2[1]}, {ListadaDoenças[1]}")
+                itensdalista = (Atendimento[0], ListadaPacientes[1], ListadaSintomas1[1], ListadaSintomas2[1], ListadaDoenças[1])
 
-            if Atendimento[8] == None:
+                listafinal.append(itensdalista)
+
+            if Atendimento[4] != None and Atendimento[6] != None and Atendimento[8] == None:
                 ListadaSintomas2 = conexaoBanco.consultarBanco(f'''
                     SELECT * FROM "Sintomas"
                     WHERE "ID" = '{Atendimento[4]}'
@@ -1196,9 +1018,11 @@ def verMeusAtendimento():
                     SELECT * FROM "Sintomas"
                     WHERE "ID" = '{Atendimento[6]}'
                     ''')[0]
-                print(f"{Atendimento[0]}, {ListadaPacientes[1]}, {ListadaSintomas1[1]},  {ListadaSintomas2[1]},  {ListadaSintomas3[1]}, {ListadaDoenças[1]}")
+                itensdalista = (Atendimento[0], ListadaPacientes[1], ListadaSintomas1[1],  ListadaSintomas2[1],  ListadaSintomas3[1], ListadaDoenças[1])
+
+                listafinal.append(itensdalista)
                 
-            else:
+            if Atendimento[4] != None and Atendimento[6] != None and Atendimento[8] != None:
                 ListadaSintomas2 = conexaoBanco.consultarBanco(f'''
                     SELECT * FROM "Sintomas"
                     WHERE "ID" = '{Atendimento[4]}'
@@ -1211,10 +1035,13 @@ def verMeusAtendimento():
                     SELECT * FROM "Sintomas"
                     WHERE "ID" = '{Atendimento[8]}'
                     ''')[0]
-                print(f"{Atendimento[0]}, {ListadaPacientes[1]}, {ListadaSintomas1[1]},  {ListadaSintomas2[1]},  {ListadaSintomas3[1]},  {ListadaSintomas4[1]}, {ListadaDoenças[1]}")
+                itensdalista = (Atendimento[0], ListadaPacientes[1], ListadaSintomas1[1],  ListadaSintomas2[1],  ListadaSintomas3[1],  ListadaSintomas4[1], ListadaDoenças[1])
    
+                listafinal.append(itensdalista)
+
+        return listafinal
     else:
-        print("Ocorreu um erro na consulta, ou a lista é vazia.")
+        return "Ocorreu um erro na consulta, ou a lista é vazia."
 
 def verificaçãoDoença(listadeSintomas):
 
@@ -1272,34 +1099,3 @@ def verificaçãoDoença(listadeSintomas):
     y = next(k for k, v in resultado.items() if v == m)
 
     return y
-
-# #----------------------------------------------------------------------------------------------------------------------#
-
-while True:
-
-    print('''
-    _______________________________________
-    |           _______________           |
-    |           | Bem Vindo à |           |
-    |           |  ClickMed   |           |
-    |           |_____________|           |
-    |                                     |
-    |              1. Login               |
-    |              2. Cadastro            |
-    |              0. Sair                |
-    |_____________________________________|
-    
-    ''')
-
-    op = input("Escolha o menu que deseja acessar:")
-
-    match op:
-        case "1":
-            menuLogin()
-        case "2":
-            menuCadastroPaciente()
-        case "0":
-            print("Saindo da programa...")
-            break
-        case _:
-            print("Escolha uma opção válida.")

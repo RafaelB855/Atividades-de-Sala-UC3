@@ -19,3 +19,21 @@ m = max(resultado.values())
 y = next(k for k, v in resultado.items() if v == m)
 
 print(y)
+
+listafinal= []
+listasemifinal = []
+
+listadoença=["dasdas1","dasdsa2",3]
+
+listasintomas=[156,"dsadsad3"]
+
+coisas = (listasintomas[1], listadoença[1] ,listasintomas[0], listadoença[2])
+
+listafinal.append(coisas)
+
+print(listafinal)
+
+rafa= "rafa"
+
+rafa2 = rafa.upper()
+print(rafa,rafa2)
